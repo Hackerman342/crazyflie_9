@@ -14,14 +14,19 @@ import readchar
 
 
 def hight(msg):
-    global h
-    h = msg.pose.position.z
+    global x,y,z
+
+    x=round(msg.pose.position.x,1)
+    y=round(msg.pose.position.y,1)
+    z=round(msg.pose.position.z,1)
 
 
 def stay_callback(msg):
     global goal
     goal=msg
-    goal.zDistance=h+goal.zDistance
+    goal.z=z+goal.z
+    goal.x=x+goal.x
+    goal.y=y+goal.y
     
     #rospy.loginfo(goal)
 
@@ -32,14 +37,15 @@ def stay_callback(msg):
 
     
 sub = rospy.Subscriber("cf1/pose", PoseStamped, hight)
-hover_publisher=rospy.Publisher("/cf1/cmd_hover", Hover,queue_size=10) #Publishes current height and position 
-hover_sub=rospy.Subscriber("goal", Hover, stay_callback)
+hover_publisher=rospy.Publisher("/cf1/cmd_position", Position,queue_size=10) #Publishes current height and position 
+hover_sub=rospy.Subscriber("goal", Position, stay_callback)
 
-last_msg=Hover()
-last_msg.vx=0
-last_msg.vy=0
-last_msg.zDistance=0
-last_msg.yawrate=0
+Current_Position=Position()
+Current_Position.x=0
+Current_Position.y=0
+Current_Position.z=0
+Current_Position.yaw=0
+
 
 goal=None
 
@@ -47,23 +53,34 @@ goal=None
 if __name__ == '__main__':
     global h, state
     rospy.init_node('stayelevated')
-    rate = rospy.Rate(20)
+    rate = rospy.Rate(5)
     while not rospy.is_shutdown():
        
         if goal:
+            print("GOAL!!!")
             hover_publisher.publish(goal)
+            Current_Position.x= goal.x
+            Current_Position.y= goal.y
+            Current_Position.z=goal.z
+            Current_Position.yaw=goal.yaw
+
             goal=None
+            rate.sleep()
         else:
-            last_msg.zDistance=h
-            last_msg.vx=0
-            last_msg.vy=0
-            last_msg.yawrate=0
-            hover_publisher.publish(last_msg)
+            print("NO GOAL")
+            
+            
+            hover_publisher.publish(Current_Position)
 
             # publish(last_msg)
         rate.sleep()
 
           
+
+            
+
+
+    # rospy.spin()
 
             
 

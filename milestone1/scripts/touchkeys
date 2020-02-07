@@ -18,7 +18,7 @@ import readchar
 def send_keys():
   
 
-    cmd = Hover()
+    cmd = Position()
     key = readchar.readkey()
 
     #cmd.vx = 0
@@ -28,36 +28,36 @@ def send_keys():
 
 
     if key=='w':
-        cmd.vy=1
+        cmd.y=1
 
     if key=='s':
-        cmd.vy=-1
+        cmd.y=-1
     
     if key=='d':
-        cmd.vx=1
+        cmd.x=1
 
     if key=='a':
-        cmd.vx=-1
+        cmd.x=-1
 
     if key=='u':
-        cmd.zDistance = 0.2
+        cmd.z= 0.2
     
     if key=='j':
-        cmd.zDistance=-  0.2
+        cmd.z=-  0.2
     
         
     if key=='x':
-        cmd.yawrate=40
+        cmd.yaw=40
     
     if key=='z':
-        cmd.yawrate=-40
+        cmd.yaw=-40
     
     
     if key=='r':
-        cmd.zDistance=0.4
-        cmd.vx=0
-        cmd.vy=0
-        cmd.yawrate=0
+        cmd.z=0.4
+        cmd.x=0
+        cmd.y=0
+        cmd.yaw=0
 
 
     
@@ -72,7 +72,7 @@ def send_keys():
 
 #count = 0
 #sub = rospy.Subscriber("cf1/pose", PoseStamped, hight)
-fly_crazyflie=rospy.Publisher("goal", Hover,queue_size=10)
+fly_crazyflie=rospy.Publisher("goal", Position ,queue_size=10)
 
 
 
