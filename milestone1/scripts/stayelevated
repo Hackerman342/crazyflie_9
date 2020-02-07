@@ -15,7 +15,8 @@ import readchar
 
 def hight(msg):
     global h
-    h = msg.pose.position.z
+    h = round(msg.pose.position.z,1)
+    h = .2
 
 
 def stay_callback(msg):
@@ -47,9 +48,9 @@ goal=None
 if __name__ == '__main__':
     global h, state
     rospy.init_node('stayelevated')
-    rate = rospy.Rate(20)
+    rate = rospy.Rate(1)
     while not rospy.is_shutdown():
-       
+        print('loop')
         if goal:
             hover_publisher.publish(goal)
             goal=None
@@ -61,7 +62,8 @@ if __name__ == '__main__':
             hover_publisher.publish(last_msg)
 
             # publish(last_msg)
-        rate.sleep()
+        print('rate')
+        #rate.sleep()
 
           
 

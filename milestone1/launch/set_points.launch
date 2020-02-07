@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <arg name="goal_topic" default="/cf1/cmd_position"/>
+  <arg name="goal_frame" default="map"/>
+  <arg name="goal_pose" default=".5, .5, .2, 0"/> <!-- x, y, z, yaw -->
+
+  <!-- <arg name="goal_topic" default="/cf1/cmd_position"/> -->
+  
+  
+  <!-- <node name="navgoal3" pkg="milestone1" type="navgoal3.py" output="screen" /> -->
+
+  <node name="set_points" pkg="milestone1" type="set_points.py" output="screen">
+
+    <param name="goal_topic" value="$(arg goal_topic)"/>
+    <param name="goal_frame" value="$(arg goal_frame)"/>
+    <param name="goal_pose" value="$(arg goal_pose)"/>
+
+  </node>
+
+
+</launch>
+
