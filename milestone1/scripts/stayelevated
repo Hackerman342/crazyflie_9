@@ -1,0 +1,89 @@
+#!/usr/bin/env python
+
+import math
+import rospy
+import tf2_ros
+import tf2_geometry_msgs
+from tf.transformations import euler_from_quaternion
+from geometry_msgs.msg import PoseStamped
+from crazyflie_driver.msg import Position, Hover
+import random
+import readchar
+
+
+
+
+def hight(msg):
+    global x,y,z
+
+    x=round(msg.pose.position.x,1)
+    y=round(msg.pose.position.y,1)
+    z=round(msg.pose.position.z,1)
+
+
+def stay_callback(msg):
+    global goal
+    goal=msg
+    goal.z=z+goal.z
+    goal.x=x+goal.x
+    goal.y=y+goal.y
+    
+    #rospy.loginfo(goal)
+
+   
+
+
+    
+
+    
+sub = rospy.Subscriber("cf1/pose", PoseStamped, hight)
+hover_publisher=rospy.Publisher("/cf1/cmd_position", Position,queue_size=10) #Publishes current height and position 
+hover_sub=rospy.Subscriber("goal", Position, stay_callback)
+
+Current_Position=Position()
+Current_Position.x=0
+Current_Position.y=0
+Current_Position.z=0
+Current_Position.yaw=0
+
+
+goal=None
+
+
+if __name__ == '__main__':
+    global h, state
+    rospy.init_node('stayelevated')
+    rate = rospy.Rate(5)
+    while not rospy.is_shutdown():
+       
+        if goal:
+            print("GOAL!!!")
+            hover_publisher.publish(goal)
+            Current_Position.x= goal.x
+            Current_Position.y= goal.y
+            Current_Position.z=goal.z
+            Current_Position.yaw=goal.yaw
+
+            goal=None
+            rate.sleep()
+        else:
+            print("NO GOAL")
+            
+            
+            hover_publisher.publish(Current_Position)
+
+            # publish(last_msg)
+        rate.sleep()
+
+          
+
+            
+
+
+    # rospy.spin()
+
+            
+
+
+    # rospy.spin()
+    
