@@ -2,7 +2,7 @@
 
 <launch>
 
-  <arg name="world/map" default="tutorial_1.world"/>
+  <!-- <arg name="world/map" default="tutorial_1.world"/> -->
 
   <group>
     <!-- <include file="$(find dd2419_simulation)/launch/simulation.launch" /> -->
@@ -11,8 +11,8 @@
     
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find milestone1)/include/milestone1.rviz" output="screen" />
     <!-- <node name="navgoal3" pkg="milestone1" type="navgoal3.py" output="screen" /> -->
-    <node name="displaymapmarkers" pkg="milestone1" type="displaymapmarkers.py" output="screen" args="$(find dd2419_resources)/worlds_json/$(arg world/map).json"/>
-    <node name="colorseg" pkg="milestone1" type="colorseg.py" output="screen" />
+    <!-- <node name="displaymapmarkers" pkg="milestone1" type="displaymapmarkers.py" output="screen" args="$(find dd2419_resources)/worlds_json/$(arg world/map).json"/> -->
+    <!-- <node name="colorseg" pkg="milestone1" type="colorseg.py" output="screen" /> -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 1 map cf1/odom" />
     
   </group>

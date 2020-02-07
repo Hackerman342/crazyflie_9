@@ -18,7 +18,6 @@ class GoalPublisher():
         self.goal_topic = rospy.get_param(param)
         param = rospy.search_param("goal_frame")
         self.goal_frame = rospy.get_param(param)
-        # Initial Floating pose
         param = rospy.search_param("goal_pose")
         self.goal_pose_string = rospy.get_param(param)
         self.goal_pose_list = list(self.goal_pose_string.split(", "))
@@ -60,12 +59,18 @@ if __name__ == '__main__':
     
     goalpub = GoalPublisher()
     rospy.loginfo("Successful execution of init function")
+    
+    #runtime = 5 # seconds
+    #pubrate = 30
 
-    while not rospy.is_shutdown():
-        goalpub.goal_pub()
+    #rate = rospy.Rate(pubrate) # hz
+    #for i in range(runtime*pubrate):
+    goalpub.goal_pub()
+    #rate.sleep()
+    
     rospy.loginfo("Successfully ran script")
 
-        # def publish_cmd(goal):
+    # def publish_cmd(goal):
     #     # Need to tell TF that the goal was just generated
     #     goal.header.stamp = rospy.Time.now()
 

@@ -14,8 +14,8 @@ import numpy as np
 
 
 
-def hight(msg):
-    global x,y,z, yaw
+def pos_callback(msg):
+    global x, y, z, yaw
 
     x=round(msg.pose.position.x,1)
     y=round(msg.pose.position.y,1)
@@ -23,27 +23,20 @@ def hight(msg):
     quat = msg.pose.orientation
     _, _, yaw = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
     yaw = round((180./np.pi)*yaw) # Convert yaw to degrees
-    #print("yaw: ", yaw)
 
-def stay_callback(msg):
+def goal_callback(msg):
     global goal
     goal=msg
-    goal.x=x+goal.x
-    goal.y=y+goal.y
-    goal.z=z+goal.z
-    goal.yaw=yaw+goal.yaw
+    print(goal)
+    # goal=msg
+    # goal.x=goal.x
+    # goal.y=y+goal.y
+    # goal.z=z+goal.z
+    # goal.yaw=yaw+goal.yaw
     
-    #rospy.loginfo(goal)
-
-   
-
-
-    
-
-    
-sub = rospy.Subscriber("cf1/pose", PoseStamped, hight)
+sub = rospy.Subscriber("cf1/pose", PoseStamped, pos_callback)
 hover_publisher=rospy.Publisher("/cf1/cmd_position", Position,queue_size=10) #Publishes current height and position 
-hover_sub=rospy.Subscriber("goal", Position, stay_callback)
+hover_sub=rospy.Subscriber("goal", Position, goal_callback)
 
 Current_Position=Position()
 Current_Position.x=0.5
@@ -53,11 +46,11 @@ Current_Position.yaw=0
 
 
 goal=None
-
+rospy.sleep(2)
 
 if __name__ == '__main__':
     global h, state
-    rospy.init_node('stayelevated')
+    rospy.init_node('hover')
     rate = rospy.Rate(5)
     while not rospy.is_shutdown():
        
@@ -68,27 +61,10 @@ if __name__ == '__main__':
             Current_Position.y = goal.y
             Current_Position.z = goal.z
             Current_Position.yaw = goal.yaw
-
             goal=None
             rate.sleep()
         else:
             #print("NO GOAL")
-            
-            
             hover_publisher.publish(Current_Position)
-
-            # publish(last_msg)
         rate.sleep()
-
-          
-
-            
-
-
-    # rospy.spin()
-
-            
-
-
-    # rospy.spin()
     

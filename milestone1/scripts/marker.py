@@ -52,12 +52,13 @@ class image_converter:
         mask = cv2.inRange(hsv, lower_red, upper_red)
         points = cv2.findNonZero(mask)
 
-        x_max = np.amax(points, axis=0)[0][0]
-        y_max = np.amax(points, axis=0)[0][1]        
-        x_min = np.amin(points, axis=0)[0][0]
-        y_min = np.amin(points, axis=0)[0][1]
+        if len(points) > 1000:
+            x_max = np.amax(points, axis=0)[0][0]
+            y_max = np.amax(points, axis=0)[0][1]        
+            x_min = np.amin(points, axis=0)[0][0]
+            y_min = np.amin(points, axis=0)[0][1]
 
-        cv2.rectangle(cv_image, (x_min, y_min), (x_max, y_max), 255, 2)
+            cv2.rectangle(cv_image, (x_min, y_min), (x_max, y_max), 255, 2)
 
         # Bitwise-AND mask and original image
         #res = cv2.bitwise_and(cv_image, cv_image, mask= mask)
