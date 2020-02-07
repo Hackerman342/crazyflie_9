@@ -18,11 +18,10 @@ class GoalPublisher():
         self.goal_topic = rospy.get_param(param)
         param = rospy.search_param("goal_frame")
         self.goal_frame = rospy.get_param(param)
+        # Initial Floating pose
         param = rospy.search_param("goal_pose")
         self.goal_pose_string = rospy.get_param(param)
-        print(self.goal_pose_string)
         self.goal_pose_list = list(self.goal_pose_string.split(", "))
-        print(self.goal_pose_list)
         self.goal_pose = [float(i) for i in self.goal_pose_list]         
         
         

@@ -28,29 +28,28 @@ def send_keys():
 
 
     if key=='w':
-        cmd.y=1
+        cmd.x=0.1
 
     if key=='s':
-        cmd.y=-1
+        cmd.x=-0.1
     
-    if key=='d':
-        cmd.x=1
-
     if key=='a':
-        cmd.x=-1
+        cmd.y=0.1
+
+    if key=='d':
+        cmd.y=-0.1
 
     if key=='u':
-        cmd.z= 0.2
+        cmd.z= 0.4
     
     if key=='j':
-        cmd.z=-  0.2
-    
+        cmd.z=-  0.4  
         
     if key=='x':
-        cmd.yaw=40
+        cmd.yaw=22.5
     
     if key=='z':
-        cmd.yaw=-40
+        cmd.yaw=-22.5
     
     
     if key=='r':

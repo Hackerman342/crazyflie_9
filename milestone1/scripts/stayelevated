@@ -9,24 +9,29 @@ from geometry_msgs.msg import PoseStamped
 from crazyflie_driver.msg import Position, Hover
 import random
 import readchar
+import numpy as np
 
 
 
 
 def hight(msg):
-    global x,y,z
+    global x,y,z, yaw
 
     x=round(msg.pose.position.x,1)
     y=round(msg.pose.position.y,1)
     z=round(msg.pose.position.z,1)
-
+    quat = msg.pose.orientation
+    _, _, yaw = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
+    yaw = round((180./np.pi)*yaw) # Convert yaw to degrees
+    print("yaw: ", yaw)
 
 def stay_callback(msg):
     global goal
     goal=msg
-    goal.z=z+goal.z
     goal.x=x+goal.x
     goal.y=y+goal.y
+    goal.z=z+goal.z
+    goal.yaw=yaw+goal.yaw
     
     #rospy.loginfo(goal)
 
@@ -41,8 +46,8 @@ hover_publisher=rospy.Publisher("/cf1/cmd_position", Position,queue_size=10) #Pu
 hover_sub=rospy.Subscriber("goal", Position, stay_callback)
 
 Current_Position=Position()
-Current_Position.x=0
-Current_Position.y=0
+Current_Position.x=0.5
+Current_Position.y=0.5
 Current_Position.z=0
 Current_Position.yaw=0
 
@@ -59,10 +64,10 @@ if __name__ == '__main__':
         if goal:
             print("GOAL!!!")
             hover_publisher.publish(goal)
-            Current_Position.x= goal.x
-            Current_Position.y= goal.y
-            Current_Position.z=goal.z
-            Current_Position.yaw=goal.yaw
+            Current_Position.x = goal.x
+            Current_Position.y = goal.y
+            Current_Position.z = goal.z
+            Current_Position.yaw = goal.yaw
 
             goal=None
             rate.sleep()

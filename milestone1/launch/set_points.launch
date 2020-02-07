@@ -4,7 +4,9 @@
 
   <arg name="goal_topic" default="/cf1/cmd_position"/>
   <arg name="goal_frame" default="map"/>
-  <arg name="goal_pose" default=".5, .5, .2, 0"/> <!-- x, y, z, yaw -->
+  <arg name="init_float" default=".5, .5, .4, 0"/> <!-- x, y, z, yaw -->
+  <arg name="goal_pose1" default="1, .5, .4, 0"/> <!-- x, y, z, yaw -->
+  <arg name="goal_pose2" default="1, 1, .4, 0"/> <!-- x, y, z, yaw -->
 
   <!-- <arg name="goal_topic" default="/cf1/cmd_position"/> -->
   
