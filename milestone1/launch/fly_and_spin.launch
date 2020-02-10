@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <arg name="goal_topic" default="goal"/>
+  <arg name="goal_frame" default="map"/>
+  <arg name="sim_or_real" default="sim"/> <!-- 'sim' for simulation or 'real' for actual drone -->
+  <arg name="distance_forward" default="3"/> <!-- in meters -->
+  <arg name="spin_count" default="3"/> <!-- number of spins -->
+  
+
+  <!-- Launch hover node -->
+  <node name="hover" pkg="milestone1" type="hover.py" output="screen"/>
+  <include file="$(find milestone1)/launch/milestone1_background.launch" /> -->
+
+
+  <node name="fly_and_spin" pkg="milestone1" type="fly_and_spin.py" output="screen">
+
+    <param name="goal_topic"                        value="$(arg goal_topic)"/>
+    <param name="goal_frame"                        value="$(arg goal_frame)"/>
+    <param name="sim_or_real"                        value="$(arg sim_or_real)"/>
+    <param name="distance_forward"    type="int"    value="$(arg distance_forward)"/>
+    <param name="spin_count"          type="int"    value="$(arg spin_count)"/>
+
+  </node>
+
+
+</launch>
+
