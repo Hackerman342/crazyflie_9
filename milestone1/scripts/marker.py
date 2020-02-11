@@ -20,19 +20,6 @@ class image_converter:
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/cf1/camera/image_raw", Image, self.callback)
 
-    def max_value(self, coordinates, direction):
-        if direction == 'x' or direction == 'X':
-            return max([x[0] for x in coordinates])
-        elif direction == 'y' or direction == 'Y':
-            return max([y[-1] for y in coordinates])
-
-    def min_value(self, coordinates, direction):
-        
-        if direction == 'x' or direction == 'X':
-            return min([x[0] for x in coordinates])
-        elif direction == 'y' or direction == 'Y':
-            return min([y[-1] for y in coordinates])
-
 
     def callback(self,data):
         # Convert the image from OpenCV to ROS format
@@ -41,8 +28,11 @@ class image_converter:
         except CvBridgeError as e:
             print(e)
 
+            
+
         # Convert BGR to HSV
-        hsv = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
+        blurred_cv_image = cv2.GaussianBlur(cv_image, (5, 5), 0)
+        hsv = cv2.cvtColor(blurred_cv_image, cv2.COLOR_BGR2HSV)
 
         # define range of the color we look for in the HSV space
         lower_red = np.array([155,25,0])
@@ -50,15 +40,10 @@ class image_converter:
 
         # Threshold the HSV image to get only the pixels in ranage
         mask = cv2.inRange(hsv, lower_red, upper_red)
-        points = cv2.findNonZero(mask)
-
-        if len(points) > 1000:
-            x_max = np.amax(points, axis=0)[0][0]
-            y_max = np.amax(points, axis=0)[0][1]        
-            x_min = np.amin(points, axis=0)[0][0]
-            y_min = np.amin(points, axis=0)[0][1]
-
-            cv2.rectangle(cv_image, (x_min, y_min), (x_max, y_max), 255, 2)
+        _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    
+        for contour in contours:
+            cv2.drawContours(cv_image, contour, -1, (0, 255, 0), 3)
 
         # Bitwise-AND mask and original image
         #res = cv2.bitwise_and(cv_image, cv_image, mask= mask)
