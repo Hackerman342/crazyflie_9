@@ -43,7 +43,12 @@ class image_converter:
         _, contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
     
         for contour in contours:
-            cv2.drawContours(cv_image, contour, -1, (0, 255, 0), 3)
+            x, y, w, h = cv2.boundingRect(contour)
+            rect = cv2.minAreaRect(contour)
+            box = cv2.boxPoints(rect)
+            box = box.astype('int')
+
+            cv2.drawContours(cv_image, [box], -1, (0, 255, 0), 3)
 
         # Bitwise-AND mask and original image
         #res = cv2.bitwise_and(cv_image, cv_image, mask= mask)
