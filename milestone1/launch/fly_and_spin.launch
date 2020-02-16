@@ -5,13 +5,13 @@
   <arg name="goal_topic" default="goal"/>
   <arg name="goal_frame" default="map"/>
   <arg name="sim_or_real" default="real"/> <!-- 'sim' for simulation or 'real' for actual drone -->
-  <arg name="distance_forward" default="1.5"/> <!-- in meters -->
+  <arg name="distance_forward" default="2"/> <!-- in meters -->
   <arg name="spin_count" default="3"/> <!-- number of spins -->
   
 
   <!-- Launch hover node -->
   <node name="hover" pkg="milestone1" type="hover.py" output="screen"/>
-  <include file="$(find milestone1)/launch/milestone1_background.launch" /> -->
+  <!-- <include file="$(find milestone1)/launch/milestone1_background.launch" /> --> -->
 
 
   <node name="fly_and_spin" pkg="milestone1" type="fly_and_spin.py" output="screen">

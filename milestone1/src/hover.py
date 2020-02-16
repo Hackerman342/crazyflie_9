@@ -51,12 +51,13 @@ rospy.sleep(2)
 if __name__ == '__main__':
     global h, state
     rospy.init_node('hover')
+    rospy.loginfo("Successful initilization of 'hover' node")
     rate = rospy.Rate(5)
     while not rospy.is_shutdown():
        
         if goal:
             print("GOAL!!!")
-            hover_publisher.publish(goal)
+            hover_publisher.pub float                                   floatlish(goal)
             Current_Position.x = goal.x
             Current_Position.y = goal.y
             Current_Position.z = goal.z
