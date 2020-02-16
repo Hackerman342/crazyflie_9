@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <!-- <arg name="world/map" default="tutorial_1.world"/> -->
+
+  <group>
+    <!-- <include file="$(find dd2419_simulation)/launch/simulation.launch" /> -->
+    <!-- <include file="$(find dd2419_simulation)/launch/aruco.launch" /> -->
+    <!-- <include file="$(find flight_camp)/launch/aruco_drone_tf.launch" /> -->
+    
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find milestone2)/include/milestone2.rviz" output="screen" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 1 map cf1/odom" />
+    
+  </group>
+
+</launch>
+
