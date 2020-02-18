@@ -25,8 +25,8 @@ class ObjectDetect:
     ##### DNN stuff #####
 
     # arguments from the argument parser of the example
-    self.prototxt = 'MobileNetSSD_deploy.prototxt.txt'
-    self.model = 'MobileNetSSD_deploy.caffemodel'
+    self.prototxt = '/home/robot/dd2419_ws/src/crazyflie_9/milestone2/include/dnn_models/MobileNetSSD_deploy.prototxt.txt'
+    self.model = '/home/robot/dd2419_ws/src/crazyflie_9/milestone2/include/dnn_models/MobileNetSSD_deploy.caffemodel'
     self.confidence = 0.2 # Minimum probability
 
     # initialize the list of class labels MobileNet SSD was trained to
@@ -40,6 +40,9 @@ class ObjectDetect:
     # load our serialized model from disk
     print("[INFO] loading model...")
     self.net = cv2.dnn.readNetFromCaffe(self.prototxt, self.model)
+
+    rospy.sleep(5)
+
 
   
   def callback(self,data):
