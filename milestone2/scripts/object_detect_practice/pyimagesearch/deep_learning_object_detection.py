@@ -7,6 +7,8 @@ import numpy as np
 import argparse
 import cv2
 
+print('openCV version:', cv2.__version__)
+
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--image", required=True,

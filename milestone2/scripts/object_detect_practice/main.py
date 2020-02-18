@@ -25,11 +25,11 @@ def id_class_name(class_id, classes):
         if class_id == key:
             return value
 
-
 # Loading model
 model = cv2.dnn.readNetFromTensorflow('models/frozen_inference_graph.pb',
                                       'models/ssd_mobilenet_v2_coco_2018_03_29.pbtxt')
-image = cv2.imread("image.jpeg")
+image = cv2.imread("stop.jpeg")
+#print(image.shape)
 
 image_height, image_width, _ = image.shape
 
