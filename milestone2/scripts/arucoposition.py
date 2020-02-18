@@ -15,6 +15,7 @@ import numpy as np
 
 
 def arucopose(data):
+    print("Sees aruco")
    
     for elm in data.markers:
 
@@ -22,13 +23,17 @@ def arucopose(data):
         cam_aruco.pose = elm.pose.pose
         cam_aruco.header.frame_id = 'camera_link'
         cam_aruco.header.stamp = rospy.Time()
+        _, _, yaw_transformed = euler_from_quaternion((cam_aruco.pose.orientation.x,
+                                              cam_aruco.pose.orientation.y,
+                                              cam_aruco.pose.orientation.z,
+                                              cam_aruco.pose.orientation.w))
          
         if not tfBuffer.can_transform(cam_aruco.header.frame_id, 'cf1/odom', cam_aruco.header.stamp):
             rospy.logwarn_throttle(5.0, 'No transform from %s to cf1/odom' % cam_aruco.header.frame_id)
             return
 
         
-        send_transform = tfBuffer.transform(cam_aruco, 'cf1/odom', rospy.Duration(1) )
+        send_transform = tfBuffer.transform(cam_aruco, 'cf1/odom', rospy.Duration(1))
     
         t= TransformStamped()
         t.header.stamp = rospy.Time.now()
@@ -52,12 +57,9 @@ def arucopose(data):
         
         
         
-        _, _, yaw_transformed = euler_from_quaternion((t.transform.rotation.x,
-                                              t.transform.rotation.y,
-                                              t.transform.rotation.z,
-                                              t.transform.rotation.w))
+        
 
-        yaw_transformed = round((180./np.pi)*yaw_transformed)
+        
 
         aruco_postion=Position()
         
@@ -74,16 +76,16 @@ def arucopose(data):
         
         
 
-
-
+rospy.init_node('arucoposition')
+br = tf2_ros.TransformBroadcaster()
+tfBuffer = tf2_ros.Buffer()
+tf=tf2_ros.TransformListener(tfBuffer)
+aruco_sub=rospy.Subscriber("/aruco/markers", MarkerArray, arucopose)
+aruco_position_pub=rospy.Publisher("aruco_position_pose", Position,queue_size=10)
 
 if __name__ == "__main__":
-    rospy.init_node('arucoposition')
-    br = tf2_ros.TransformBroadcaster()
-    tfBuffer = tf2_ros.Buffer()
-    tf=tf2_ros.TransformListener(tfBuffer)
-    aruco_sub=rospy.Subscriber("/aruco/markers", MarkerArray, arucopose)
-    aruco_position_pub=rospy.Publisher("aruco_position_pose", Position,queue_size=10)
+    
+  
     rospy.spin()
 
 

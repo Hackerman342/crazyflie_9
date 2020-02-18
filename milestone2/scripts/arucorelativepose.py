@@ -22,26 +22,32 @@ from crazyflie_driver.msg import Position
 
 #     _, _, yaw = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
 #     yaw = round((180./np.pi)*yaw) # Convert yaw to degrees
-    
 
-def goal_callback(msg): # Keeps distance to aruco
+
+
+
+def goal_callback(msg):
+    print("Har goal")
+    global goal # Keeps distance to aruco
     goal=msg                    
-    global goal
    
 
 
 
 # Initializing Position and goal
 Current_Position=Position()
-Current_Position.x=0.5
-Current_Position.y=0.5
+Current_Position.x=0.0
+Current_Position.y=0.0
 Current_Position.z=0.4
 Current_Position.yaw=0
-
 goal=None
 
+
 if __name__ == '__main__':
+   
+    
     rospy.init_node('arucorelativepose')
+     
     # pose_position = rospy.Subscriber("cf1/pose", PoseStamped, current_pos)
     aruco_sub=rospy.Subscriber("aruco_position_pose", Position, goal_callback)
     pos_publish=rospy.Publisher("/cf1/cmd_position", Position,queue_size=10)
@@ -49,6 +55,7 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
 
         if goal:
+            print("goal")
             pos_publish.publish(goal)
             Current_Position.x=goal.x
             Current_Position.y=goal.y
@@ -58,6 +65,7 @@ if __name__ == '__main__':
 
 
         else:
+            print("no goal")
             pos_publish.publish(Current_Position)
 
 
