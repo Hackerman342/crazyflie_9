@@ -15,7 +15,7 @@ class GoalPublisher():
     def __init__(self):
         # Pull ROS parameters from launch file:
         param = rospy.search_param("goal_topic")
-        self.goal_topic = rospy.get_param(param)
+        self.goal_topic = rospy.get_param(param) # self.goal_topic = goal
         param = rospy.search_param("goal_frame")
         self.goal_frame = rospy.get_param(param)
         param = rospy.search_param("goal_pose")
