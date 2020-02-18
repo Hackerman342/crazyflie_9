@@ -1,5 +1,8 @@
 import cv2
 
+print('openCV version:', cv2.__version__)
+
+
 # Pretrained classes in the model
 classNames = {0: 'background',
               1: 'person', 2: 'bicycle', 3: 'car', 4: 'motorcycle', 5: 'airplane', 6: 'bus',
@@ -24,6 +27,7 @@ def id_class_name(class_id, classes):
     for key, value in classes.items():
         if class_id == key:
             return value
+
 
 # Loading model
 model = cv2.dnn.readNetFromTensorflow('models/frozen_inference_graph.pb',
