@@ -4,7 +4,7 @@
 
   <arg name="goal_topic" default="goal"/>
   <arg name="goal_frame" default="map"/>
-  <arg name="sim_or_real" default="real"/> <!-- 'sim' for simulation or 'real' for actual drone -->
+  <arg name="sim_or_real" default="sim"/> <!-- 'sim' for simulation or 'real' for actual drone -->
   <arg name="distance_forward" default="2"/> <!-- in meters -->
   <arg name="spin_count" default="3"/> <!-- number of spins -->
   
