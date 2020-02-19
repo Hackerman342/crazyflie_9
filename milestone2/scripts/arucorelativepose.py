@@ -51,7 +51,7 @@ if __name__ == '__main__':
     # pose_position = rospy.Subscriber("cf1/pose", PoseStamped, current_pos)
     aruco_sub=rospy.Subscriber("aruco_position_pose", Position, goal_callback)
     pos_publish=rospy.Publisher("/cf1/cmd_position", Position,queue_size=10)
-
+    rate = rospy.Rate(5)
     while not rospy.is_shutdown():
 
         if goal:
@@ -65,9 +65,8 @@ if __name__ == '__main__':
 
 
         else:
-            print("no goal")
             pos_publish.publish(Current_Position)
 
+        rate.sleep()
 
-
-    rospy.spin()
+    # rospy.spin()
