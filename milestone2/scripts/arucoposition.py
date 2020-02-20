@@ -21,17 +21,18 @@ def arucopose(data):
 
         cam_aruco = PoseStamped()
         cam_aruco.pose = elm.pose.pose
-        cam_aruco.header.frame_id = 'camera_link'
-        cam_aruco.header.stamp = rospy.Time()
-
+        cam_aruco.header.frame_id = 'cf1/camera_link'
+        cam_aruco.header.stamp = rospy.Time.now()
+        print('here we are')
          
-        if not tfBuffer.can_transform(cam_aruco.header.frame_id, 'cf1/odom', cam_aruco.header.stamp):
+        if not tfBuffer.can_transform(cam_aruco.header.frame_id, 'cf1/odom', rospy.Time(0)):
             rospy.logwarn_throttle(5.0, 'No transform from %s to cf1/odom' % cam_aruco.header.frame_id)
             return
+        print('here we are (after TF)')
 
         
-        send_transform = tfBuffer.transform(cam_aruco, 'cf1/odom', rospy.Duration(1))
-    
+        send_transform = tfBuffer.transform(cam_aruco, 'cf1/odom', rospy.Duration(0.5))
+
         t= TransformStamped()
         t.header.stamp = rospy.Time.now()
         t.header.frame_id = 'cf1/odom'
@@ -52,6 +53,8 @@ def arucopose(data):
         aruco_pos.pose.orientation.z = quaternion[2]
         aruco_pos.pose.orientation.w = quaternion[3]
         aruco_pos.header.frame_id = 'arucopostion' + str(elm.id)
+        aruco_pos.header.stamp = rospy.Time()
+
         
         # aruco_pos.header.stamp = rospy.Time.now()
 
@@ -61,7 +64,7 @@ def arucopose(data):
         # cam_aruco.pose.position.z=cam_aruco.pose.position.z-0.5 #Redefine z, Get relative pose in order stay half a meter away from it
         
 
-        Pose_transform = tfBuffer.transform(aruco_pos, 'cf1/odom', rospy.Duration(1) )
+        Pose_transform = tfBuffer.transform(aruco_pos, 'cf1/odom', rospy.Duration(0.5) )
 
         _, _, yaw_transformed = euler_from_quaternion((Pose_transform.pose.orientation.x ,
                                               Pose_transform.pose.orientation.y,
@@ -81,6 +84,7 @@ def arucopose(data):
 
     
         aruco_position_pub.publish(aruco_position)
+        # rospy.sleep(1)
         
         
 
@@ -93,7 +97,7 @@ aruco_position_pub=rospy.Publisher("aruco_position_pose", Position,queue_size=10
 
 if __name__ == "__main__":
     
-  
+    
     rospy.spin()
 
 
