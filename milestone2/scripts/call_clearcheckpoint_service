@@ -4,6 +4,7 @@ import rospy
 
 
 if __name__ == "__main__":
+    rospy.init_node("callservice")
     rospy.wait_for_service('clearpointservice')
     checkpoint = rospy.ServiceProxy('clearpointservice', Empty)
     checkpoint()
