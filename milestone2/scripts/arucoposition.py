@@ -53,21 +53,10 @@ def arucopose(data):
         aruco_pos.pose.orientation.z = quaternion[2]
         aruco_pos.pose.orientation.w = quaternion[3]
         aruco_pos.header.frame_id = 'arucopostion' + str(elm.id)
-<<<<<<< HEAD
         aruco_pos.header.stamp = rospy.Time()
 
-=======
         aruco_pos.header.stamp=rospy.Time()
->>>>>>> a500fbf024ebdd3d7789543af7426a678fb4b3c0
         
-        # aruco_pos.header.stamp = rospy.Time.now()
-
-       
-        
-         # Transformation of the 
-        # cam_aruco.pose.position.z=cam_aruco.pose.position.z-0.5 #Redefine z, Get relative pose in order stay half a meter away from it
-        
-
         Pose_transform = tfBuffer.transform(aruco_pos, 'cf1/odom', rospy.Duration(0.5) )
 
         _, _, yaw_transformed = euler_from_quaternion((Pose_transform.pose.orientation.x ,
@@ -78,17 +67,14 @@ def arucopose(data):
        
 
         aruco_position=Position()
-
-        # aruco_position.header.frame_id="cf1/odom"
         aruco_position.x=Pose_transform.pose.position.x
         aruco_position.y=Pose_transform.pose.position.y
         aruco_position.z=Pose_transform.pose.position.z
-        
         aruco_position.yaw=yaw_transformed
 
     
         aruco_position_pub.publish(aruco_position)
-        # rospy.sleep(1)
+      
         
         
 
