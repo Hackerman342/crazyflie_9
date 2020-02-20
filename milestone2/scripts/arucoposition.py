@@ -52,6 +52,7 @@ def arucopose(data):
         aruco_pos.pose.orientation.z = quaternion[2]
         aruco_pos.pose.orientation.w = quaternion[3]
         aruco_pos.header.frame_id = 'arucopostion' + str(elm.id)
+        aruco_pos.header.stamp=rospy.Time()
         
         # aruco_pos.header.stamp = rospy.Time.now()
 
