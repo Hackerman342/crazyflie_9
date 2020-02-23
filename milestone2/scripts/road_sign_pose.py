@@ -8,12 +8,16 @@ import cv2
 import numpy as np
 import math
 
+from scipy import ndimage
+
 import tf2_ros 
 import tf2_geometry_msgs
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 from geometry_msgs.msg import TransformStamped
 
 from darknet_ros_msgs.msg import ObjectCount, BoundingBox, BoundingBoxes
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
 """
 Read a bounding box and object id and determine pose in camera frame from bounding box
 """
@@ -25,6 +29,8 @@ class SignPose:
     # Initialize parameters
     #### NOTE: Hardcoding now - will add launch file and parameters later
     self.bounding_boxes_top = '/darknet_ros/bounding_boxes'
+    self.raw_img_top = '/cf1/camera/image_raw'
+    self.img_top = '/darknet_ros/detection_image'
     self.cam_frame = 'cf1/camera_link'
     self.odom_frame = 'cf1/odom'
 
@@ -35,22 +41,39 @@ class SignPose:
     self.sign_dim = [0.20, 0.20]
     
     
-    # Initialize subscribers
+    # Initialize subscriber to bounding box
     rospy.Subscriber(self.bounding_boxes_top, BoundingBoxes, self.boxes_cb)
+    # Initialize subscriber to raw image
+    self.bridge = CvBridge()
+    rospy.Subscriber(self.raw_img_top, Image, self.img_cb)
+    # rospy.Subscriber(self.img_top, Image, self.img_cb)
+    
+    self.image_pub = rospy.Publisher("/myresult", Image, queue_size=2)
 
     # Initialize tf stuff
     self.br = tf2_ros.TransformBroadcaster()
     tfBuffer = tf2_ros.Buffer()
     tf=tf2_ros.TransformListener(tfBuffer)
   
+
   def boxes_cb(self,msg):
     # Get timestamp from message and image
     self.img_time = msg.image_header.stamp.secs + (10**-9)*msg.image_header.stamp.nsecs # Time image was actually taken
     self.header_time = msg.header.stamp.secs + (10**-9)*msg.header.stamp.nsecs # Time reading is received
     # Read boxes 
     self.boxes = msg.bounding_boxes
+    #self.image_
     # Call pose extraction function
     self.extract_pose()
+
+
+  def img_cb(self,data):
+      # Convert the image from OpenCV to ROS format
+      try:
+          self.cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+      except CvBridgeError as e:
+          print(e)
+
 
   def extract_pose(self):
     # Get coordinates of 
@@ -60,26 +83,37 @@ class SignPose:
           ob_class = box.Class
 
           # Size
-          print(box)
-          xsize = box.xmax - box.xmin
-          ysize = box.ymax - box.ymin
-          pix_area = xsize*ysize
+          self.xsize = box.xmax - box.xmin
+          self.ysize = box.ymax - box.ymin
+          pix_area = self.xsize*self.ysize
+          self.y_over_x = float(self.ysize)/float(self.xsize)
+          print('y over x: ', self.y_over_x)
+
           # Image Center
-          xc = (box.xmax + box.xmin)/2
+          self.xc = (box.xmax + box.xmin)/2
           yc = (box.ymax + box.ymin)/2
 
-          #
+          # Camera Parameters
           foc_dist = (self.cam_mat[0] + self.cam_mat[4])/2
+          self.x0 = self.cam_mat[2]
+          y0 = self.cam_mat[5]
+
+          # Test different sign distance calculations
+          sign_distx = foc_dist*self.sign_dim[0]/self.xsize
+          sign_disty = foc_dist*self.sign_dim[1]/self.ysize
           sign_area = self.sign_dim[0]*self.sign_dim[1]
           sign_dist2 = foc_dist*math.sqrt(sign_area)/math.sqrt(pix_area)
-          sign_distx = foc_dist*self.sign_dim[0]/xsize
-          sign_disty = foc_dist*self.sign_dim[1]/ysize
           # Choose which Z calculation to use
           z = sign_distx
-          x0 = self.cam_mat[2]
-          y0 = self.cam_mat[5]
-          x = z*(xc - x0)/foc_dist
+          # Infer x and y tranforms
+          x = z*(self.xc - self.x0)/foc_dist
           y = z*(yc - y0)/foc_dist
+
+          # Extract angle
+          infl = 10 # pixels
+          crop_img = self.cv_image[box.ymin-infl:box.ymax+infl, box.xmin-infl:box.xmax+infl, :]
+          ang = self.extract_angle(crop_img, infl)
+
 
           # Broadcast transform to detected sign
           t = TransformStamped()
@@ -90,17 +124,91 @@ class SignPose:
           t.transform.translation.x = x
           t.transform.translation.y = y
           t.transform.translation.z = z
-          quat = quaternion_from_euler(-1.54, 0, -1.54)
+          quat = quaternion_from_euler(-1.54+ang, 0, -1.54)
           t.transform.rotation.x = quat[0]
           t.transform.rotation.y = quat[1]
           t.transform.rotation.z = quat[2]
           t.transform.rotation.w = quat[3]
-          print(t)
 
 
           self.br.sendTransform(t)
 
-        
+  def extract_angle(self, crop_img, infl):
+    # For color red
+    lower = np.array([155,25,0])
+    upper = np.array([179,255,255])
+
+    # Convert BGR to HSV
+    hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
+    # Threshold the HSV image to get only the pixels in ranage
+    mask = cv2.inRange(hsv, lower, upper)
+
+    # Bitwise-AND mask and original image
+    crop_img = cv2.bitwise_and(crop_img, crop_img, mask= mask)
+
+    # Turn thresholded image into 2D binary image
+    vals = np.sum(crop_img, axis = 2)
+    vals[vals > 0] = 1
+
+    # Perform dilation to fill in words
+    vals = ndimage.binary_dilation(vals, iterations = 3).astype(vals.dtype)
+
+    # Create 3D binary image to publish (for debugging only)
+    pubvals = np.repeat(vals[:, :, np.newaxis], 3, axis=2)*255
+    pubvals = pubvals.astype(np.uint8)
+
+    # Calculate center of mass in x-direction
+    sums = np.sum(vals, axis=0)
+    # Remove zeros (padding around sign)
+    sums = sums[sums > 10]
+
+    # Find where the max location occurs
+    # If multiple occurences, average the locations
+    where = np.where(sums == np.amax(sums))[0]
+    print(where)
+    max_loc = float(np.average(where))/float(sums.size)
+
+    # cells = np.arange(sums.size)
+
+    # if np.sum(sums) > 0:
+    #   x_com = np.dot(sums,cells)/np.sum(sums)
+    # else:
+    #   x_com = sums.size/2
+
+    # # Calculate ratio of C.O.M. to box center
+    # ratio = x_com/sums.size
+
+    # Tuneable parameters
+    rect_slide = 0.25 # Ratio change y over x for 90deg | default: 0.5
+    max_slide = 0.2 # Ratio change of max_loc for 90deg | default: 0.2
+    ave = 0.5 # Typical center for max_loc | default: 0.5
+
+    # if ratio == 0:
+    #   ang = 0
+    # else:
+    if self.y_over_x < 1:
+          self.y_over_x = 1
+
+    ang = 1.57*((self.y_over_x - 1)/rect_slide)*((ave - max_loc)/max_slide)
+    #ang = (self.y_over_x1.57/slide)*(ave - max_loc)
+    
+    if abs(ang) > 1.57:
+          ang = 1.57*np.sign(ang)
+
+    print('max loc: ', max_loc)
+    print('angle: ', ang)
+
+    # Publish thresholded sign (only for debugging)
+    try:
+      #self.image_pub.publish(self.bridge.cv2_to_imgmsg(crop_img, "bgr8"))
+      self.image_pub.publish(self.bridge.cv2_to_imgmsg(pubvals, "bgr8"))
+      # self.image_pub.publish(self.bridge.cv2_to_imgmsg(vals, encoding="passthrough"))
+    except CvBridgeError as e:
+      print(e)
+
+    return ang
+
+
           
           
 
