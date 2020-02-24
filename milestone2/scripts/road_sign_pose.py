@@ -26,13 +26,20 @@ Read a bounding box and object id and determine pose in camera frame from boundi
 class SignPose:
 
   def __init__(self):
-    # Initialize parameters
-    #### NOTE: Hardcoding now - will add launch file and parameters later
-    self.bounding_boxes_top = '/darknet_ros/bounding_boxes'
-    self.raw_img_top = '/cf1/camera/image_raw'
-    self.img_top = '/darknet_ros/detection_image'
-    self.cam_frame = 'cf1/camera_link'
-    self.odom_frame = 'cf1/odom'
+    # Pull ROS parameters from launch file:
+    param = rospy.search_param("bounding_box_topic")
+    self.bounding_boxes_top = rospy.get_param(param)
+    param = rospy.search_param("image_topic")
+    self.img_top = rospy.get_param(param)
+    param = rospy.search_param("binary_image_topic")
+    self.binary_img_top = rospy.get_param(param)
+    param = rospy.search_param("camera_frame")
+    self.cam_frame = rospy.get_param(param)
+    param = rospy.search_param("odometry_frame")
+    self.odom_frame = rospy.get_param(param)
+    # param = rospy.search_param("map_frame")
+    # self.map_frame = rospy.get_param(param)
+
 
     # From '/home/robot/dd2419_ws/src/course_packages/dd2419_launch/calibration/camera.yaml' or topic: /cf1/camera/camera_info
     #              [    fx    ,     s   ,     x0    ,     0   ,     fy    ,     y0    ,     0   ,     0   ,     1   ]
@@ -43,17 +50,19 @@ class SignPose:
     
     # Initialize subscriber to bounding box
     rospy.Subscriber(self.bounding_boxes_top, BoundingBoxes, self.boxes_cb)
-    # Initialize subscriber to raw image
-    self.bridge = CvBridge()
-    rospy.Subscriber(self.raw_img_top, Image, self.img_cb)
-    # rospy.Subscriber(self.img_top, Image, self.img_cb)
     
-    self.image_pub = rospy.Publisher("/myresult", Image, queue_size=2)
+    # Initialize subscriber to image
+    rospy.Subscriber(self.img_top, Image, self.img_cb)
+    # Initialize CvBridge
+    self.bridge = CvBridge()
+    # Initialize publisher for binary, thresholded sign (helps for debugging)
+    self.image_pub = rospy.Publisher(self.binary_img_top, Image, queue_size=2)
 
-    # Initialize tf stuff
+    # Initialize tf broadcaster
     self.br = tf2_ros.TransformBroadcaster()
+    # Listen to other tf transforms
     tfBuffer = tf2_ros.Buffer()
-    tf=tf2_ros.TransformListener(tfBuffer)
+    tf2_ros.TransformListener(tfBuffer)
   
 
   def boxes_cb(self,msg):
@@ -62,7 +71,6 @@ class SignPose:
     self.header_time = msg.header.stamp.secs + (10**-9)*msg.header.stamp.nsecs # Time reading is received
     # Read boxes 
     self.boxes = msg.bounding_boxes
-    #self.image_
     # Call pose extraction function
     self.extract_pose()
 
@@ -101,20 +109,23 @@ class SignPose:
             y0 = self.cam_mat[5]
 
             # Test different sign distance calculations
-            sign_distx = foc_dist*self.sign_dim[0]/self.xsize
+            #sign_distx = foc_dist*self.sign_dim[0]/self.xsize
             sign_disty = foc_dist*self.sign_dim[1]/self.ysize
-            sign_area = self.sign_dim[0]*self.sign_dim[1]
-            sign_dist2 = foc_dist*math.sqrt(sign_area)/math.sqrt(pix_area)
+            #sign_area = self.sign_dim[0]*self.sign_dim[1]
+            #sign_dist2 = foc_dist*math.sqrt(sign_area)/math.sqrt(pix_area)
             # Choose which Z calculation to use
             z = sign_disty
             # Infer x and y tranforms
             x = z*(self.xc - self.x0)/foc_dist
             y = z*(yc - y0)/foc_dist
 
-            # Extract angle
-            infl = 10 # pixels
-            crop_img = self.cv_image[box.ymin-infl:box.ymax+infl, box.xmin-infl:box.xmax+infl, :]
-            ang = self.extract_angle(crop_img, infl)
+            # Crop out image inside bounding box (w/ some padding)
+            pad = 10 # pixels
+            crop_img = self.cv_image[box.ymin-pad:box.ymax+pad, box.xmin-pad:box.xmax+pad, :]
+            
+            # Call angle extraction function
+            ang = self.extract_angle(crop_img)
+            #ang = 0
 
 
             # Broadcast transform to detected sign
@@ -132,22 +143,27 @@ class SignPose:
             t.transform.rotation.z = quat[2]
             t.transform.rotation.w = quat[3]
 
-
             self.br.sendTransform(t)
 
-  def extract_angle(self, crop_img, infl):
+  def extract_angle(self, crop_img):
     # For color red
-    lower = np.array([155,25,0])
-    upper = np.array([179,255,255])
+    lower1 = np.array([150,25,0])
+    upper1 = np.array([180,255,255])
+    lower2 = np.array([0,25,0])
+    upper2 = np.array([30,255,255])
 
     # Convert BGR to HSV
     hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
 
     # Threshold the HSV image to get only the pixels in ranage
-    mask = cv2.inRange(hsv, lower, upper)
+    mask1 = cv2.inRange(hsv, lower1, upper1)
+    mask2 = cv2.inRange(hsv, lower2, upper2)
 
     # Bitwise-AND mask and original image
-    crop_img = cv2.bitwise_and(crop_img, crop_img, mask= mask)
+    crop_img1 = cv2.bitwise_and(crop_img, crop_img, mask= mask1)
+    crop_img2 = cv2.bitwise_and(crop_img, crop_img, mask= mask2)
+
+    crop_img = crop_img1 + crop_img2
     
     # Turn thresholded image into 2D binary image
     vals = np.sum(crop_img, axis = 2)

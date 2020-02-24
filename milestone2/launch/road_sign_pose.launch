@@ -2,25 +2,29 @@
 
 <launch>
 
-  <!-- <arg name="goal_topic"                default="/move_base_simple/goal"/>
-  <arg name="goal_frame"                default="map"/>
-  <arg name="send_goal"                 default="false"/> -->
+  <!-- Launch YOLO object detection-->
   <include file="$(find darknet_ros)/launch/darknet_ros.launch" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_stop" args="1.5 .5 0.4 1.57 -1.57 0 map true_stop" />
+  <!-- Add static transform to true stop sign pose for comparison -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_stop" args="1.2 0.5 0.7 1.57 -1.57 0 map true_stop" />
+
+
+  <arg name="bounding_box_topic"                default="/darknet_ros/bounding_boxes"/>
+  <arg name="image_topic"                       default="/cf1/camera/image_raw"/>  
+  <!-- <arg name="image_topic"                  default="/darknet_ros/detection_image"/> -->
+  <arg name="binary_image_topic"                default="/binary_sign"/>  
+  <arg name="camera_frame"                      default="cf1/camera_link"/>
+  <arg name="odometry_frame"                    default="cf1/odom"/>
+  <!-- <arg name="map_frame"                    default="map"/> -->
 
 
   <node name="road_sign_pose" pkg="milestone2" type="road_sign_pose.py" output="screen">
-    <!-- For sending goal -->
-    <!-- <param name="goal_topic"                            value="$(arg goal_topic)"/>
-    <param name="goal_frame"                            value="$(arg goal_frame)"/>
-    <param name="send_goal"             type="bool"     value="$(arg send_goal)"/>
-    <param name="segmented_image_topic"                 value="$(arg segmented_image_topic)"/>
-    <param name="detection_threshold"   type="double"   value="$(arg detection_threshold)"/> -->
-
+    <param name="bounding_box_topic"                value="$(arg bounding_box_topic)"/>
+    <param name="image_topic"                       value="$(arg image_topic)"/>
+    <param name="binary_image_topic"                value="$(arg binary_image_topic)"/>
+    <param name="camera_frame"                      value="$(arg camera_frame)"/>
+    <param name="odometry_frame"                    value="$(arg odometry_frame)"/>
+    <!-- <param name="map_frame"                    value="$(arg map_frame)"/> -->
   </node>
-
-
-
 
 </launch>
 
