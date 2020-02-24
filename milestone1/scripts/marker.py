@@ -36,7 +36,7 @@ class image_converter:
 
         # define range of the color we look for in the HSV space
         lower_red = np.array([155,25,0])
-        upper_red = np.array([179,255,255])
+        upper_red = np.array([30,255,255])
 
         # Threshold the HSV image to get only the pixels in ranage
         mask = cv2.inRange(hsv, lower_red, upper_red)

@@ -6,6 +6,7 @@
   <arg name="goal_frame"                default="map"/>
   <arg name="send_goal"                 default="false"/> -->
   <include file="$(find darknet_ros)/launch/darknet_ros.launch" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_stop" args="1.5 .5 0.4 1.57 -1.57 0 map true_stop" />
 
 
   <node name="road_sign_pose" pkg="milestone2" type="road_sign_pose.py" output="screen">

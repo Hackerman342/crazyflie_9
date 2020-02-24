@@ -81,57 +81,59 @@ class SignPose:
           box = self.boxes[i]
           # Class
           ob_class = box.Class
+          print(ob_class)
+          if ob_class == 'stop sign':
+                
+            # Size
+            self.xsize = box.xmax - box.xmin
+            self.ysize = box.ymax - box.ymin
+            pix_area = self.xsize*self.ysize
+            self.y_over_x = float(self.ysize)/float(self.xsize)
+            print('y over x: ', self.y_over_x)
 
-          # Size
-          self.xsize = box.xmax - box.xmin
-          self.ysize = box.ymax - box.ymin
-          pix_area = self.xsize*self.ysize
-          self.y_over_x = float(self.ysize)/float(self.xsize)
-          print('y over x: ', self.y_over_x)
+            # Image Center
+            self.xc = (box.xmax + box.xmin)/2
+            yc = (box.ymax + box.ymin)/2
 
-          # Image Center
-          self.xc = (box.xmax + box.xmin)/2
-          yc = (box.ymax + box.ymin)/2
+            # Camera Parameters
+            foc_dist = (self.cam_mat[0] + self.cam_mat[4])/2
+            self.x0 = self.cam_mat[2]
+            y0 = self.cam_mat[5]
 
-          # Camera Parameters
-          foc_dist = (self.cam_mat[0] + self.cam_mat[4])/2
-          self.x0 = self.cam_mat[2]
-          y0 = self.cam_mat[5]
+            # Test different sign distance calculations
+            sign_distx = foc_dist*self.sign_dim[0]/self.xsize
+            sign_disty = foc_dist*self.sign_dim[1]/self.ysize
+            sign_area = self.sign_dim[0]*self.sign_dim[1]
+            sign_dist2 = foc_dist*math.sqrt(sign_area)/math.sqrt(pix_area)
+            # Choose which Z calculation to use
+            z = sign_disty
+            # Infer x and y tranforms
+            x = z*(self.xc - self.x0)/foc_dist
+            y = z*(yc - y0)/foc_dist
 
-          # Test different sign distance calculations
-          sign_distx = foc_dist*self.sign_dim[0]/self.xsize
-          sign_disty = foc_dist*self.sign_dim[1]/self.ysize
-          sign_area = self.sign_dim[0]*self.sign_dim[1]
-          sign_dist2 = foc_dist*math.sqrt(sign_area)/math.sqrt(pix_area)
-          # Choose which Z calculation to use
-          z = sign_distx
-          # Infer x and y tranforms
-          x = z*(self.xc - self.x0)/foc_dist
-          y = z*(yc - y0)/foc_dist
-
-          # Extract angle
-          infl = 10 # pixels
-          crop_img = self.cv_image[box.ymin-infl:box.ymax+infl, box.xmin-infl:box.xmax+infl, :]
-          ang = self.extract_angle(crop_img, infl)
-
-
-          # Broadcast transform to detected sign
-          t = TransformStamped()
-          t.header.stamp = rospy.Time.now()
-          t.header.frame_id = self.cam_frame
-          t.child_frame_id = 'detected/' + str(ob_class)
-          
-          t.transform.translation.x = x
-          t.transform.translation.y = y
-          t.transform.translation.z = z
-          quat = quaternion_from_euler(-1.54+ang, 0, -1.54)
-          t.transform.rotation.x = quat[0]
-          t.transform.rotation.y = quat[1]
-          t.transform.rotation.z = quat[2]
-          t.transform.rotation.w = quat[3]
+            # Extract angle
+            infl = 10 # pixels
+            crop_img = self.cv_image[box.ymin-infl:box.ymax+infl, box.xmin-infl:box.xmax+infl, :]
+            ang = self.extract_angle(crop_img, infl)
 
 
-          self.br.sendTransform(t)
+            # Broadcast transform to detected sign
+            t = TransformStamped()
+            t.header.stamp = rospy.Time.now()
+            t.header.frame_id = self.cam_frame
+            t.child_frame_id = 'detected/' + str(ob_class)
+            
+            t.transform.translation.x = x
+            t.transform.translation.y = y
+            t.transform.translation.z = z
+            quat = quaternion_from_euler(-1.54+ang, 0, -1.54)
+            t.transform.rotation.x = quat[0]
+            t.transform.rotation.y = quat[1]
+            t.transform.rotation.z = quat[2]
+            t.transform.rotation.w = quat[3]
+
+
+            self.br.sendTransform(t)
 
   def extract_angle(self, crop_img, infl):
     # For color red
@@ -140,12 +142,13 @@ class SignPose:
 
     # Convert BGR to HSV
     hsv = cv2.cvtColor(crop_img, cv2.COLOR_BGR2HSV)
+
     # Threshold the HSV image to get only the pixels in ranage
     mask = cv2.inRange(hsv, lower, upper)
 
     # Bitwise-AND mask and original image
     crop_img = cv2.bitwise_and(crop_img, crop_img, mask= mask)
-
+    
     # Turn thresholded image into 2D binary image
     vals = np.sum(crop_img, axis = 2)
     vals[vals > 0] = 1
