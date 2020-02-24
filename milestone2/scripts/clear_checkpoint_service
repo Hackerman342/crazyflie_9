@@ -9,36 +9,52 @@ from std_srvs.srv import Empty, EmptyResponse
 
 
 def current_position(msg):
-    global yaw
+    global yaw,x,y,z 
+
     quat = msg.pose.orientation
-    _, _, yaw = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
+    _, _, yaw_rad = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
+    x=msg.pose.position.x
+    y=msg.pose.position.y
+    z=msg.pose.position.z
+    yaw = round((180./np.pi)*yaw_rad)
 
-    yaw = round((180./np.pi)*yaw)
 
-
-def spin_360():
-
+def spin_360(msg):
+    print("In spin_360")
+    cmd=Position()
+    cmd.yaw=yaw
+    cmd.x=x
+    cmd.y=y
+    pos_publish.publish(cmd)
     rotation=0
+    
 
     while rotation <360:
-        cmd.yaw=yaw+rotaterate
+
+        cmd.yaw+=rotaterate
+        cmd.z=0.4
+        print("yaw",yaw)
+        print("cmd.yaw", cmd)
         pos_publish.publish(cmd)
         rotation+=rotaterate
-        rate.sleep()
+        
+    
+    
+        
 
-    return EmptyResponse
-
-cmd=Position()
-rotaterate=45
-rate = rospy.Rate(5)
+    return EmptyResponse()
 
 
+    
+
+rotaterate=10
 current_pose=rospy.Subscriber("cf1/pose", PoseStamped, current_position)
 pos_publish=rospy.Publisher("/cf1/cmd_position", Position,queue_size=10)
 
 if __name__=="__main__":
     rospy.init_node('clear_checkpoint_node')
+    
     s = rospy.Service('clearpointservice', Empty, spin_360)
-
+    rospy.spin()
     
 
