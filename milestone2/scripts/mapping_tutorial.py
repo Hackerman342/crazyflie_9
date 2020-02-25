@@ -1,6 +1,11 @@
+#!/usr/bin/env python
+
 import json
+import numpy as np
 from mapping import Mapping
 import matplotlib.pyplot as plt
+import rospy
+from std_srvs.srv import SetBool
 
 # Mapping tutorial
 
@@ -16,4 +21,20 @@ matrx = mapp.matrix
 # Since the matrix doesn't have negative indices we need to change the axis when plotting the image
 plt.imshow(matrx, extent=[-matrx.shape[1]/2., matrx.shape[1]/2., -matrx.shape[0]/2., matrx.shape[0]/2.])
 
+matrx_indx = np.nonzero(matrx == 1)
+oy = matrx_indx[0].tolist()
+ox = matrx_indx[1].tolist()
+
+
+
 plt.show()
+
+# if __name__ == "__main__":
+#     rospy.wait_for_service("create_map")
+
+#     try:
+#         map_matrix = rospy.ServiceProxy('create_map', SetBool)
+#         resp1 = map_matrix(True)
+#         print resp1
+#     except rospy.ServiceException, e:
+#         print "Service call failed: %s"%e
