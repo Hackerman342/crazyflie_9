@@ -12,8 +12,8 @@ from scipy import ndimage
 
 import tf2_ros 
 import tf2_geometry_msgs
-from tf.transformations import euler_from_quaternion, quaternion_from_euler
-from geometry_msgs.msg import TransformStamped
+from tf.transformations import euler_from_quaternion, quaternion_from_euler, quaternion_multiply
+from geometry_msgs.msg import TransformStamped, PoseStamped
 
 from darknet_ros_msgs.msg import ObjectCount, BoundingBox, BoundingBoxes
 from sensor_msgs.msg import Image
@@ -37,9 +37,10 @@ class SignPose:
     self.cam_frame = rospy.get_param(param)
     param = rospy.search_param("odometry_frame")
     self.odom_frame = rospy.get_param(param)
-    # param = rospy.search_param("map_frame")
-    # self.map_frame = rospy.get_param(param)
-
+    param = rospy.search_param("map_frame")
+    self.map_frame = rospy.get_param(param)
+    param = rospy.search_param("true_stop_frame")
+    self.true_stop_frame = rospy.get_param(param)
 
     # From '/home/robot/dd2419_ws/src/course_packages/dd2419_launch/calibration/camera.yaml' or topic: /cf1/camera/camera_info
     #              [    fx    ,     s   ,     x0    ,     0   ,     fy    ,     y0    ,     0   ,     0   ,     1   ]
@@ -61,8 +62,8 @@ class SignPose:
     # Initialize tf broadcaster
     self.br = tf2_ros.TransformBroadcaster()
     # Listen to other tf transforms
-    tfBuffer = tf2_ros.Buffer()
-    tf2_ros.TransformListener(tfBuffer)
+    self.tfBuffer = tf2_ros.Buffer()
+    self.listener = tf2_ros.TransformListener(self.tfBuffer)
   
 
   def boxes_cb(self,msg):
@@ -121,7 +122,10 @@ class SignPose:
 
             # Crop out image inside bounding box (w/ some padding)
             pad = 10 # pixels
-            crop_img = self.cv_image[box.ymin-pad:box.ymax+pad, box.xmin-pad:box.xmax+pad, :]
+            try:
+              crop_img = self.cv_image[box.ymin-pad:box.ymax+pad, box.xmin-pad:box.xmax+pad, :]
+            except:
+              crop_img = self.cv_image[box.ymin:box.ymax, box.xmin:box.xmax, :]
             
             # Call angle extraction function
             ang = self.extract_angle(crop_img)
@@ -144,6 +148,32 @@ class SignPose:
             t.transform.rotation.w = quat[3]
 
             self.br.sendTransform(t)
+            # Listen to difference between true stop and detected stop
+            
+            try:
+              trans_true_stop = self.tfBuffer.lookup_transform(self.map_frame, self.true_stop_frame, rospy.Time(0))
+              trans_detect_stop = self.tfBuffer.lookup_transform(self.map_frame, t.child_frame_id, rospy.Time(0))
+              # Invert quaternion of detected sign
+              trans_detect_stop.transform.rotation.w = -1*trans_detect_stop.transform.rotation.w
+              # Calc difference between detected and true in map frame
+              diff = PoseStamped()
+              diff.header.frame_id = self.map_frame
+              diff.pose.position.x = trans_true_stop.transform.translation.x - trans_detect_stop.transform.translation.x
+              diff.pose.position.y = trans_true_stop.transform.translation.y - trans_detect_stop.transform.translation.y
+              diff.pose.position.z = trans_true_stop.transform.translation.z - trans_detect_stop.transform.translation.z
+              diff.pose.orientation = quaternion_multiply(trans_true_stop.transform.rotation,trans_detect_stop.transform.rotation)
+              #diff = trans_true_stop*trans_detect_stop
+              print('diff: ', diff)
+
+
+
+            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+              print('Could Not lookup or multiply transforms')
+              continue
+
+
+
+
 
   def extract_angle(self, crop_img):
     # For color red
