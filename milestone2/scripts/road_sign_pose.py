@@ -90,7 +90,6 @@ class SignPose:
           box = self.boxes[i]
           # Class
           ob_class = box.Class
-          print(ob_class)
           if ob_class == 'stop sign':
                 
             # Size
@@ -122,10 +121,10 @@ class SignPose:
 
             # Crop out image inside bounding box (w/ some padding)
             pad = 10 # pixels
-            try:
-              crop_img = self.cv_image[box.ymin-pad:box.ymax+pad, box.xmin-pad:box.xmax+pad, :]
-            except:
-              crop_img = self.cv_image[box.ymin:box.ymax, box.xmin:box.xmax, :]
+            # try:
+            #   crop_img = self.cv_image[box.ymin-pad:box.ymax+pad, box.xmin-pad:box.xmax+pad, :]
+            # except:
+            crop_img = self.cv_image[box.ymin:box.ymax, box.xmin:box.xmax, :]
             
             # Call angle extraction function
             ang = self.extract_angle(crop_img)
@@ -154,14 +153,32 @@ class SignPose:
               trans_true_stop = self.tfBuffer.lookup_transform(self.map_frame, self.true_stop_frame, rospy.Time(0))
               trans_detect_stop = self.tfBuffer.lookup_transform(self.map_frame, t.child_frame_id, rospy.Time(0))
               # Invert quaternion of detected sign
-              trans_detect_stop.transform.rotation.w = -1*trans_detect_stop.transform.rotation.w
-              # Calc difference between detected and true in map frame
+              #trans_detect_stop.transform.rotation.w = -1*trans_detect_stop.transform.rotation.w
+              
+              # Calc difference between detected and true sign in map frame
               diff = PoseStamped()
               diff.header.frame_id = self.map_frame
               diff.pose.position.x = trans_true_stop.transform.translation.x - trans_detect_stop.transform.translation.x
               diff.pose.position.y = trans_true_stop.transform.translation.y - trans_detect_stop.transform.translation.y
               diff.pose.position.z = trans_true_stop.transform.translation.z - trans_detect_stop.transform.translation.z
-              diff.pose.orientation = quaternion_multiply(trans_true_stop.transform.rotation,trans_detect_stop.transform.rotation)
+              q_true = []
+              q_true.append(trans_true_stop.transform.rotation.x)
+              q_true.append(trans_true_stop.transform.rotation.y)
+              q_true.append(trans_true_stop.transform.rotation.z)
+              q_true.append(trans_true_stop.transform.rotation.w)
+              # q_true[1] = trans_true_stop.transform.rotation.y
+              # q_true[2] = trans_true_stop.transform.rotation.z
+              # q_true[3] = trans_true_stop.transform.rotation.w
+              q_detect_inv = []
+              q_detect_inv.append(trans_detect_stop.transform.rotation.x)
+              q_detect_inv.append(trans_detect_stop.transform.rotation.y)
+              q_detect_inv.append(trans_detect_stop.transform.rotation.z)
+              q_detect_inv.append(trans_detect_stop.transform.rotation.w)
+              # q_detect_inv[1] = trans_detect_stop.transform.rotation.y
+              # q_detect_inv[2] = trans_detect_stop.transform.rotation.z
+              # q_detect_inv[3] = trans_detect_stop.transform.rotation.w
+
+              diff.pose.orientation = quaternion_multiply(q_true,q_detect_inv)
               #diff = trans_true_stop*trans_detect_stop
               print('diff: ', diff)
 
