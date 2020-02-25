@@ -128,6 +128,7 @@ class SignPose:
             #sign_dist2 = foc_dist*math.sqrt(sign_area)/math.sqrt(pix_area)
             # Choose which Z calculation to use
             z = sign_disty
+            print('dist: ', z)
             # Infer x and y tranforms
             x = z*(self.xc - self.x0)/foc_dist
             y = z*(yc - y0)/foc_dist
