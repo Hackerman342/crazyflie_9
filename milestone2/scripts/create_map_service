@@ -185,6 +185,10 @@ class Mapping:
     def wall_values(self):
         pass
 
+<<<<<<< HEAD:milestone2/scripts/mapping.py
+def main(argv = sys.argv):
+    args = rospy.myargv(argv=argv)
+=======
     
 """
 def create_map(x):
@@ -199,6 +203,7 @@ def map_server():
     rospy.init_node("create_map_service")
     s = rospy.Service("create_map", SetBool, create_map)
     rospy.spin()
+>>>>>>> 17780ba83969ff6757e38024a70cc51c83609c07:milestone2/scripts/create_map_service
 
 if __name__ == "__main__":
     map_server()

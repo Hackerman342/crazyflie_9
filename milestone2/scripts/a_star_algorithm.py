@@ -3,11 +3,12 @@ A* grid planning
 """
 
 import math
-
+from mapping import Mapping
+import numpy as np
 import matplotlib.pyplot as plt
 
 show_animation = True
-
+# location = '/home/zihan/drone_ws/src/crazyflie_9/milestone2/scripts/awesome.world.json'
 
 class AStarPlanner:
 
@@ -212,38 +213,55 @@ class AStarPlanner:
 
 
 def main():
-    print(__file__ + " start!!")
+    print("start!!")
 
     # start and goal position
-    sx = 10.0  # [m]
-    sy = 10.0  # [m]
-    gx = 50.0  # [m]
-    gy = 50.0  # [m]
+    sx = 75.0  # [m]
+    sy = 100.0  # [m]
+    gx = 120.0  # [m]
+    gy = 120.0  # [m]
     grid_size = 2.0  # [m]
     robot_radius = 1.0  # [m]
+    
+    mapp = Mapping("awesome.world.json", 0.1, 3)
+    matrx = mapp.matrix
+    range_of_map = matrx.shape
+    horizonal = range_of_map[0]
+    vertical = range_of_map[1]
+    print(matrx.shape)
+    # print(horizonal)
+    # print(vertical)
 
     # set obstable positions
-    ox, oy = [], []
-    for i in range(-10, 60): # bottom line
-        ox.append(i)
-        oy.append(-10.0) 
-    for i in range(-10, 60): # right line
-        ox.append(60.0)
-        oy.append(i)
-    for i in range(-10, 61): # upper line
-        ox.append(i)
-        oy.append(60.0)
-    for i in range(-10, 61):
-        ox.append(-10.0)
-        oy.append(i)
-    for i in range(-10, 40):
-        ox.append(20.0)
-        oy.append(i)
-    for i in range(0, 40):
-        ox.append(40.0)
-        oy.append(60.0 - i)
+    matrx_indx = np.nonzero(matrx == 1) # represent the walls
+    oy_old = matrx_indx[0].tolist()
+    ox_old = matrx_indx[1].tolist()
+    oy = [vertical-i for i in oy_old]
+    ox = [horizonal-i for i in ox_old]
+
+    # ox, oy = [], []
+    # for i in range(-10, 60): # bottom line
+    #     ox.append(i)
+    #     oy.append(-10.0) 
+    # for i in range(-10, 60): # right line
+    #     ox.append(60.0)
+    #     oy.append(i)
+    # for i in range(-10, 61): # upper line
+    #     ox.append(i)
+    #     oy.append(60.0)
+    # for i in range(-10, 61):
+    #     ox.append(-10.0)
+    #     oy.append(i)
+    # for i in range(-10, 40):
+    #     ox.append(20.0)
+    #     oy.append(i)
+    # for i in range(0, 40):
+    #     ox.append(40.0)
+    #     oy.append(60.0 - i)
+    # oxy = [[ox[i], oy[i]] for i in range(len(ox))]
 
     if show_animation:  # pragma: no cover
+
         plt.plot(ox, oy, ".k")
         plt.plot(sx, sy, "og")
         plt.plot(gx, gy, "xb")
