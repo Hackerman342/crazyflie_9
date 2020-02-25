@@ -2,7 +2,7 @@
 
 import json
 import numpy as np
-from mapping import Mapping
+from create_map_service import Mapping
 import matplotlib.pyplot as plt
 import rospy
 from std_srvs.srv import SetBool
