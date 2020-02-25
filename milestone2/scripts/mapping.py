@@ -175,8 +175,5 @@ class Mapping:
 def main(argv = sys.argv):
     args = rospy.myargv(argv=argv)
 
-
-
-
 if __name__ == "__main__":
     main()
