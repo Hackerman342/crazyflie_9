@@ -25,6 +25,7 @@ def spin_360(msg):
     cmd.yaw=yaw
     cmd.x=x
     cmd.y=y
+    cmd.z=0.4
     pos_publish.publish(cmd)
     rotation=0
     
@@ -33,10 +34,9 @@ def spin_360(msg):
 
         cmd.yaw+=rotaterate
         cmd.z=0.4
-        print("yaw",yaw)
-        print("cmd.yaw", cmd)
         pos_publish.publish(cmd)
         rotation+=rotaterate
+        rospy.sleep(1)
         
     
     
