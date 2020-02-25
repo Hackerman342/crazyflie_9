@@ -2,28 +2,36 @@
 
 <launch>
 
-  <!-- Launch YOLO object detection-->
-  <include file="$(find darknet_ros)/launch/darknet_ros.launch" />
-  <!-- Add static transform to true stop sign pose for comparison -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_stop" args="1.2 0.5 0.7 1.57 -1.57 0 map true_stop" />
+
 
 
   <arg name="bounding_box_topic"                default="/darknet_ros/bounding_boxes"/>
   <arg name="image_topic"                       default="/cf1/camera/image_raw"/>  
   <!-- <arg name="image_topic"                  default="/darknet_ros/detection_image"/> -->
   <arg name="binary_image_topic"                default="/binary_sign"/>  
+  <arg name="pose_difference_topic"             default="/stop_pose_diff"/>  
+
   <arg name="camera_frame"                      default="cf1/camera_link"/>
   <arg name="odometry_frame"                    default="cf1/odom"/>
-  <!-- <arg name="map_frame"                    default="map"/> -->
+  <arg name="map_frame"                         default="map"/>
+  <arg name="true_stop_frame"                   default="true_stop"/>
+
+
+    <!-- Launch YOLO object detection-->
+  <include file="$(find darknet_ros)/launch/darknet_ros.launch" />
+  <!-- Add static transform to true stop sign pose for comparison -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_stop" args="1.2 0.5 0.7 1.57 -1.57 0 map $(arg true_stop_frame)" />
 
 
   <node name="road_sign_pose" pkg="milestone2" type="road_sign_pose.py" output="screen">
     <param name="bounding_box_topic"                value="$(arg bounding_box_topic)"/>
     <param name="image_topic"                       value="$(arg image_topic)"/>
     <param name="binary_image_topic"                value="$(arg binary_image_topic)"/>
+    <param name="pose_difference_topic"             value="$(arg pose_difference_topic)"/>
     <param name="camera_frame"                      value="$(arg camera_frame)"/>
     <param name="odometry_frame"                    value="$(arg odometry_frame)"/>
-    <!-- <param name="map_frame"                    value="$(arg map_frame)"/> -->
+    <param name="map_frame"                         value="$(arg map_frame)"/>
+    <param name="true_stop_frame"                   value="$(arg true_stop_frame)"/>
   </node>
 
 </launch>

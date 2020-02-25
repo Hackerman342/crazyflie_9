@@ -1,7 +1,11 @@
+#!/usr/bin/env python
+
 import json
 import numpy as np
 from mapping import Mapping
 import matplotlib.pyplot as plt
+import rospy
+from std_srvs.srv import SetBool
 
 # Mapping tutorial
 
@@ -20,5 +24,25 @@ matrx_indx = np.nonzero(matrx == 1)
 oy = matrx_indx[0].tolist()
 ox = matrx_indx[1].tolist()
 
+<<<<<<< HEAD
 plt.show()
 print("Stop for check the matrix variable.(USED FOR DEBUG)")
+=======
+matrx_indx = np.nonzero(matrx == 1)
+oy = matrx_indx[0].tolist()
+ox = matrx_indx[1].tolist()
+
+
+
+plt.show()
+
+# if __name__ == "__main__":
+#     rospy.wait_for_service("create_map")
+
+#     try:
+#         map_matrix = rospy.ServiceProxy('create_map', SetBool)
+#         resp1 = map_matrix(True)
+#         print resp1
+#     except rospy.ServiceException, e:
+#         print "Service call failed: %s"%e
+>>>>>>> 17780ba83969ff6757e38024a70cc51c83609c07

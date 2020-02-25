@@ -5,10 +5,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import rospy
+from std_srvs.srv import SetBool
+from rospy.numpy_msg import numpy_msg
 
 # todo create a publisher that sends the map matrix
 # todo fix the expansion, centralize the origin when expansion is applied
 # todo fix the padding, perhaps draw a box around instead of adding "walls" in every direction
+
+# zm is only a placeholder
 
 class Mapping:
 
@@ -24,8 +28,12 @@ class Mapping:
 
         with open(self.jfile) as jfile:
             self.map_data = json.load(jfile)
-            map_end, map_start = self.airspace()    
-            self.matrix = self.clean_map(map_start, map_end, expansion, self.step)
+            map_end, map_start = self.airspace()
+            
+            if expansion > 0:
+                map_start, map_end = self.expand(map_start, map_end, expansion)
+
+            self.matrix = self.clean_map(map_start, map_end, 0, self.step)
             # x_length = len(self.matrix[:,0])
             # y_length = len(self.matrix[0,:])
             self.x_conv = abs(map_start[0])/step_size
@@ -46,7 +54,12 @@ class Mapping:
         max_coords = self.map_data["airspace"]["max"]
         min_coords = self.map_data["airspace"]["min"]
         return max_coords, min_coords
-    
+
+    def expand(self, start, end, exp):
+        exp_start = (start[1] + exp, start[0] + exp)
+        exp_end = (end[1] + exp, end[0] + exp)
+        return exp_start, exp_end
+
     def objects(self, markers=False, roadsigns=False):
         # Adding objects to the map matrix
         if markers == True:
@@ -172,8 +185,26 @@ class Mapping:
     def wall_values(self):
         pass
 
+<<<<<<< HEAD:milestone2/scripts/mapping.py
 def main(argv = sys.argv):
     args = rospy.myargv(argv=argv)
+=======
+    
+"""
+def create_map(x):
+    # These are hard coded values, might change in the future
+    json_dir = "awesome.world.json"
+    step_size = 0.1
+    inflation = 2
+    mapp = Mapping(json_dir, step_size, inflation)
+    pass
+
+def map_server():
+    rospy.init_node("create_map_service")
+    s = rospy.Service("create_map", SetBool, create_map)
+    rospy.spin()
+>>>>>>> 17780ba83969ff6757e38024a70cc51c83609c07:milestone2/scripts/create_map_service
 
 if __name__ == "__main__":
-    main()
+    map_server()
+"""
