@@ -26,13 +26,18 @@ class ImageStreamCapture:
 
         self.img_top = "/cf1/camera/image_raw"
 
-        self.img_count = 300
+        self.img_count = 100
 
-        self.fps = 10 # [hz]
+        self.initial_label = 101 # integer
+
+
+        self.fps = 5 # [hz]
+
+        self.resize_bool = False # True or False
 
         self.resize = (300, 300) # [x(?), y(?)] pixel dimensions - confirm x & y!
 
-        self.save_path = "/home/robot/yolo_training/training_images/"
+        self.save_path = "/home/robot/yolo_training/training_images/narrows_from_right/"
 
         self.img_type = ".jpg"
 
@@ -41,7 +46,7 @@ class ImageStreamCapture:
 
         # Initialize subscriber to image
         rospy.Subscriber(self.img_top, Image, self.img_cb)
-        rospy.sleep(1) # Pause briefly for subscription
+        rospy.sleep(5) # Pause briefly for subscription
 
 
 
@@ -55,11 +60,15 @@ class ImageStreamCapture:
     def capture(self):
         rate = rospy.Rate(self.fps)
         for i in range(int(self.img_count)):
-            resized = cv2.resize(self.cv_image, self.resize)
-            cv2.imwrite(self.save_path + str(i+1) + self.img_type, resized)
+            if self.resize_bool:
+                image = cv2.resize(self.cv_image, self.resize)
+            else:
+                image = self.cv_image
+
+            cv2.imwrite(self.save_path + str(i+self.initial_label) + self.img_type, image)
 
 
-            print("captured image ", i+1)
+            print("captured image ", i+self.initial_label)
             rate.sleep()
 
 
