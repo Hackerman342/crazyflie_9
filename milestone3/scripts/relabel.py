@@ -1,6 +1,9 @@
 import os
 import re
 
+"""
+Relabels txt and jpg files in a provided folder
+"""
 
 def main():
     i_jpg = 1
