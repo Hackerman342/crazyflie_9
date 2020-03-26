@@ -10,7 +10,7 @@ import math
 
 from scipy import ndimage
 
-import tf2_ros 
+import tf2_ros
 import tf2_geometry_msgs
 from tf.transformations import euler_from_quaternion, quaternion_from_euler, quaternion_multiply
 from geometry_msgs.msg import TransformStamped, PoseStamped
@@ -26,10 +26,10 @@ Read a bounding box and object id and determine pose in camera frame from boundi
 class SignPose:
 
   def __init__(self):
-    
+
     # Publish binary, thresholded image (for debugging)?
     self.binary_publish = True
-    
+
     # Pull ROS parameters from launch file:
     param = rospy.search_param("bounding_box_topic")
     self.bounding_boxes_top = rospy.get_param(param)
@@ -54,15 +54,15 @@ class SignPose:
     self.cam_mat = [231.250001, 0.000000, 320.519378, 0.000000, 231.065552, 240.631482, 0.000000, 0.000000, 1.000000]
     # From '/home/robot/dd2419_ws/src/course_packages/dd2419_resources/worlds_json/______.world.json'
     self.sign_dim = [0.20, 0.20]
-    
+
     # Initialize subscriber to bounding box
     rospy.Subscriber(self.bounding_boxes_top, BoundingBoxes, self.boxes_cb)
-    
+
     # Initialize subscriber to image
     rospy.Subscriber(self.img_top, Image, self.img_cb)
     # Initialize CvBridge
     self.bridge = CvBridge()
-    
+
     # Initialize publisher for binary, thresholded sign (helps for debugging)
     if self.binary_publish:
       self.image_pub = rospy.Publisher(self.binary_img_top, Image, queue_size=1)
@@ -74,14 +74,14 @@ class SignPose:
     self.listener = tf2_ros.TransformListener(self.tfBuffer)
 
     # Initialize publisher for differecne between detected and true sign pose
-    self.pose_diff_pub = rospy.Publisher(self.binary_img_top, PoseStamped, queue_size=2)    
+    self.pose_diff_pub = rospy.Publisher(self.binary_img_top, PoseStamped, queue_size=2)
 
 
   def boxes_cb(self,msg):
     # Get timestamp from message and image
     self.img_time = msg.image_header.stamp.secs + (10**-9)*msg.image_header.stamp.nsecs # Time image was actually taken
     self.header_time = msg.header.stamp.secs + (10**-9)*msg.header.stamp.nsecs # Time reading is received
-    # Read boxes 
+    # Read boxes
     self.boxes = msg.bounding_boxes
     # Call pose extraction function
     self.extract_pose()
@@ -96,7 +96,7 @@ class SignPose:
 
 
   def extract_pose(self):
-    # Get coordinates of 
+    # Get coordinates of
     for i in range(len(self.boxes)):
     # if self.boxes[0].Class == 'stop sign':
           # box = self.boxes[0]
@@ -104,7 +104,7 @@ class SignPose:
           # Class
           ob_class = box.Class
           if ob_class == 'stop sign':
-                
+
             # Size
             self.xsize = box.xmax - box.xmin
             self.ysize = box.ymax - box.ymin
@@ -139,7 +139,7 @@ class SignPose:
               crop_img = self.cv_image[box.ymin-pad:box.ymax+pad, box.xmin-pad:box.xmax+pad, :]
             except:
               crop_img = self.cv_image[box.ymin:box.ymax, box.xmin:box.xmax, :]
-            
+
             # Call angle extraction function
             ang = self.extract_angle(crop_img)
 
@@ -148,7 +148,7 @@ class SignPose:
             t.header.stamp = rospy.Time.now()
             t.header.frame_id = self.cam_frame
             t.child_frame_id = 'detected/' + str(ob_class)
-            
+
             t.transform.translation.x = x
             t.transform.translation.y = y
             t.transform.translation.z = z
@@ -160,13 +160,13 @@ class SignPose:
 
             self.br.sendTransform(t)
             # Listen to difference between true stop and detected stop
-            
+
             try:
               difference = self.relative_tf_in_map(self.map_frame, self.true_stop_frame, t.child_frame_id)
               self.pose_diff_pub.publish(difference)
             except:
               print('Error calculating pose difference between true and detected sign')
-        
+
 
   def extract_angle(self, crop_img):
     # For color red
@@ -187,14 +187,14 @@ class SignPose:
     crop_img2 = cv2.bitwise_and(crop_img, crop_img, mask= mask2)
 
     crop_img = crop_img1 + crop_img2
-    
+
     # Turn thresholded image into 2D binary image
     vals = np.sum(crop_img, axis = 2)
     vals[vals > 0] = 1
 
     # Perform dilation to fill in words
     vals = ndimage.binary_dilation(vals, iterations = 3).astype(vals.dtype)
-    
+
     if self.binary_publish:
       # Create 3D binary image to publish (for debugging only)
       pubvals = np.repeat(vals[:, :, np.newaxis], 3, axis=2)*255
@@ -229,7 +229,7 @@ class SignPose:
           self.y_over_x = 1
 
     ang = 1.57*((self.y_over_x - 1)/rect_slide)*((ave - max_loc)/max_slide)
-    
+
     if abs(ang) > 1.57:
           ang = 1.57*np.sign(ang)
 
@@ -249,14 +249,14 @@ class SignPose:
   def relative_tf_in_map(self, map_frame, true_frame, detected_frame):
     trans_true_stop = self.tfBuffer.lookup_transform(map_frame, true_frame, rospy.Time(0))
     trans_detect_stop = self.tfBuffer.lookup_transform(map_frame, detected_frame, rospy.Time(0))
-    
+
     # Calc difference between detected and true sign in map frame
     diff = PoseStamped()
     diff.header.frame_id = map_frame
     diff.pose.position.x = trans_true_stop.transform.translation.x - trans_detect_stop.transform.translation.x
     diff.pose.position.y = trans_true_stop.transform.translation.y - trans_detect_stop.transform.translation.y
     diff.pose.position.z = trans_true_stop.transform.translation.z - trans_detect_stop.transform.translation.z
-    
+
     q_true = []
     q_true.append(trans_true_stop.transform.rotation.x)
     q_true.append(trans_true_stop.transform.rotation.y)
@@ -267,10 +267,10 @@ class SignPose:
     q_detect_inv.append(trans_detect_stop.transform.rotation.x)
     q_detect_inv.append(trans_detect_stop.transform.rotation.y)
     q_detect_inv.append(trans_detect_stop.transform.rotation.z)
-    q_detect_inv.append(-1*trans_detect_stop.transform.rotation.w) 
+    q_detect_inv.append(-1*trans_detect_stop.transform.rotation.w)
 
     diff.pose.orientation = quaternion_multiply(q_true,q_detect_inv)
-    
+
     return diff
 
 
@@ -281,7 +281,7 @@ if __name__ == '__main__':
   sp = SignPose()
 
   print("running...")
-  # Run until KeyboardInterrupt 
+  # Run until KeyboardInterrupt
   try:
     rospy.spin()
   except KeyboardInterrupt:
