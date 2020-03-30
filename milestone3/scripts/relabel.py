@@ -32,12 +32,14 @@ def main():
             os.rename(src, dst)
             i_txt += 1
 
+    print('Done!')
+
 
 
 if __name__ == '__main__':
-    path="/home/robot/yolo_training/training_images/narrows_from_left" #Set path here to the folder
+    path="/home/robot/yolo_training/training_attempt_2/training_images/roundabout" #Set path here to the folder
 
-    name_jpg = "narrows_from_left"  # Self explanatory ;)
+    name_jpg = "roundabout"  # Self explanatory ;)
     name_txt = name_jpg
 
     main()
