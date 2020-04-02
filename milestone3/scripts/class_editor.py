@@ -8,15 +8,16 @@ Changes the class of yolo labelled images
 Only works for images with one object (for now)
 """
 
-path = "/home/robot/yolo_training/training_attempt_2/training_images/roundabout"
+path = "/home/robot/yolo_training/training_images/proper_order_images/roundabout"
 file_type = re.compile('[Tt][Xx][Tt]')
 count = 0 # Verification of number of files
 
-old_class = '0'
-new_class = '4'
+old_class = '4'
+new_class = '3'
 
 for filename in os.listdir(path):
     check = file_type.search(filename)
+    print(filename)
 
     if check!=None:
         count += 1
