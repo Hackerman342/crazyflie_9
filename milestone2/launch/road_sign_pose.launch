@@ -20,7 +20,7 @@
     <!-- Launch YOLO object detection-->
   <include file="$(find darknet_ros)/launch/darknet_ros.launch" />
   <!-- Add static transform to true stop sign pose for comparison -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_stop" args="1.2 0.5 0.7 1.57 -1.57 0 map $(arg true_stop_frame)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_stop" args="1.25 0.5 0.4 1.57 -1.57 0 map $(arg true_stop_frame)" />
 
 
   <node name="road_sign_pose" pkg="milestone2" type="road_sign_pose.py" output="screen">
