@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <arg name="bounding_box_topic"                default="/darknet_ros/bounding_boxes"/>
+  <arg name="image_topic"                       default="/cf1/camera/image_raw"/>
+  <!-- <arg name="image_topic"                  default="/darknet_ros/detection_image"/> -->
+  <arg name="camera_frame"                      default="cf1/camera_link"/>
+  <arg name="odometry_frame"                    default="cf1/odom"/>
+  <arg name="map_frame"                         default="map"/>
+
+  <!-- Launch YOLO object detection-->
+  <include file="$(find darknet_ros)/launch/darknet_ros.launch" />
+
+  <!-- Add static transform to true sign poses for comparison -->
+  <arg name="true_sign_frame_1"                 default="narrows_from_left/true"/>
+  <arg name="true_sign_frame_2"                 default="no_bicycle/true"/>
+  <arg name="true_sign_frame_3"                 default="residential/true"/>
+  <arg name="true_sign_frame_4"                 default="roundabout/true"/>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_sign_1" args="0.2 1.25 0.6 1.57 -1.57 1.57 map $(arg true_sign_frame_1)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_sign_2" args="1.3 0.4 0.6 1.57 -1.57 0 map $(arg true_sign_frame_2)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_sign_3" args="0.6 1.25 0.6 1.57 -1.57 1.57 map $(arg true_sign_frame_3)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_sign_4" args="0.22 0.0 0.6 1.57 -1.57 -1.57 map $(arg true_sign_frame_4)" />
+
+
+  <node name="multiclass_road_sign_pose" pkg="milestone3" type="multiclass_road_sign_pose.py" output="screen">
+    <param name="bounding_box_topic"                value="$(arg bounding_box_topic)"/>
+    <param name="image_topic"                       value="$(arg image_topic)"/>
+    <param name="camera_frame"                      value="$(arg camera_frame)"/>
+    <param name="odometry_frame"                    value="$(arg odometry_frame)"/>
+    <param name="map_frame"                         value="$(arg map_frame)"/>
+  </node>
+
+</launch>
+
