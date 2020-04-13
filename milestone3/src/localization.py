@@ -23,7 +23,9 @@ def goal_callback(msg):
 def arucopose(data):
 
 
-    for elm in data.markers:
+    # for elm in data.markers:
+    if len(data.markers) > 0:
+        elm = data.markers[0]
         cam_aruco = PoseStamped()
         cam_aruco.pose = elm.pose.pose
         cam_aruco.header.frame_id = 'cf1/camera_link'
@@ -133,7 +135,7 @@ rospy.init_node('Localization')
 # Code in order to get aruco positions from json map
 
 #-----------------------------------------------------------------------------------
-map= "/home/robot/dd2419_ws/src/course_packages/dd2419_resources/worlds_json/awesome.world.json" #path to where map json file  is located.
+map= "/home/robot/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json" #path to where map json file  is located.
 
 with open(map) as json_file:
     data = json.load(json_file)

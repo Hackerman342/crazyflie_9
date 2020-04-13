@@ -57,7 +57,7 @@ if __name__ == '__main__':
        
         if goal:
             print("GOAL!!!")
-            hover_publisher.pub float                                   floatlish(goal)
+            hover_publisher.publish(goal)
             Current_Position.x = goal.x
             Current_Position.y = goal.y
             Current_Position.z = goal.z
