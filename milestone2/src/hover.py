@@ -33,17 +33,22 @@ def goal_callback(msg):
     # goal.y=y+goal.y
     # goal.z=z+goal.z
     # goal.yaw=yaw+goal.yaw
-    
+
 sub = rospy.Subscriber("cf1/pose", PoseStamped, pos_callback)
-hover_publisher=rospy.Publisher("/cf1/cmd_position", Position,queue_size=10) #Publishes current height and position 
+hover_publisher=rospy.Publisher("/cf1/cmd_position", Position,queue_size=10) #Publishes current height and position
 hover_sub=rospy.Subscriber("goal", Position, goal_callback)
+
+# tf_buffer = tf2_ros.Buffer()
+# tf2_ros.TransformListener(tf_buffer)
+
+
 
 Current_Position=Position()
 Current_Position.x=0.5
 Current_Position.y=0.5
 Current_Position.z=0
 Current_Position.yaw=0
-
+Current_Position.header.frame_id = "map"
 
 goal=None
 rospy.sleep(2)
@@ -54,8 +59,12 @@ if __name__ == '__main__':
     rospy.loginfo("Successful initilization of 'hover' node")
     rate = rospy.Rate(5)
     while not rospy.is_shutdown():
-       
+
         if goal:
+
+            # odom_tf = tf_buffer.lookup_transform('')
+
+
             print("GOAL!!!")
             hover_publisher.publish(goal)
             Current_Position.x = goal.x
