@@ -7,8 +7,8 @@ from mapping import Mapping
 import numpy as np
 import matplotlib.pyplot as plt
 
-show_animation = True
-# location = '/home/zihan/drone_ws/src/crazyflie_9/milestone2/scripts/awesome.world.json'
+show_animation = False
+location = '/home/zihan/dd2419_ws/src/crazyflie_9/worlds_json/tutorial_1.world.json'
 
 class AStarPlanner:
 
@@ -77,7 +77,7 @@ class AStarPlanner:
                     plt.pause(0.001)
 
             if current.x == ngoal.x and current.y == ngoal.y:
-                print("Find goal")
+                # print("Find goal")
                 ngoal.pind = current.pind
                 ngoal.cost = current.cost
                 break
@@ -174,15 +174,15 @@ class AStarPlanner:
         self.miny = round(min(oy))
         self.maxx = round(max(ox))
         self.maxy = round(max(oy))
-        print("minx:", self.minx)
-        print("miny:", self.miny)
-        print("maxx:", self.maxx)
-        print("maxy:", self.maxy)
+        # print("minx:", self.minx)
+        # print("miny:", self.miny)
+        # print("maxx:", self.maxx)
+        # print("maxy:", self.maxy)
 
         self.xwidth = round((self.maxx - self.minx) / self.reso)
         self.ywidth = round((self.maxy - self.miny) / self.reso)
-        print("xwidth:", self.xwidth)
-        print("ywidth:", self.ywidth)
+        # print("xwidth:", self.xwidth)
+        # print("ywidth:", self.ywidth)
 
         # obstacle map generation
         self.obmap = [[False for i in range(self.ywidth)]
@@ -213,7 +213,7 @@ class AStarPlanner:
 
 
 def main():
-    print("start!!")
+    # print("start!!")
 
     # start and goal position
     sx = 75.0  # [m]
@@ -223,12 +223,12 @@ def main():
     grid_size = 2.0  # [m]
     robot_radius = 1.0  # [m]
     
-    mapp = Mapping("awesome.world.json", 0.1, 3)
+    mapp = Mapping(location, 0.1, 3)
     matrx = mapp.matrix
     range_of_map = matrx.shape
     horizonal = range_of_map[0]
     vertical = range_of_map[1]
-    print(matrx.shape)
+    # print(matrx.shape)
     # print(horizonal)
     # print(vertical)
 
@@ -270,7 +270,9 @@ def main():
 
     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
     rx, ry = a_star.planning(sx, sy, gx, gy)
-
+    rx.reverse()
+    ry.reverse()
+    # print(rx,ry)
     if show_animation:  # pragma: no cover
         plt.plot(rx, ry, "-r")
         plt.show()
