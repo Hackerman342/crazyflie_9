@@ -158,7 +158,7 @@ goal = None
 
 if __name__ == "__main__":
 
-    rate = rospy.Rate(30)
+    rate = rospy.Rate(5)
     while not rospy.is_shutdown():
         if goal:
             arucopose(goal)
