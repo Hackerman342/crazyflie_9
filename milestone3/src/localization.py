@@ -23,9 +23,9 @@ def goal_callback(msg):
 def arucopose(data):
 
 
-    # for elm in data.markers:
-    if len(data.markers) > 0:
-        elm = data.markers[0]
+    for elm in data.markers:
+    # if len(data.markers) > 0:
+    #     elm = data.markers[0]
         cam_aruco = PoseStamped()
         cam_aruco.pose = elm.pose.pose
         cam_aruco.header.frame_id = 'cf1/camera_link'
@@ -158,7 +158,7 @@ goal = None
 
 if __name__ == "__main__":
 
-    rate = rospy.Rate(20)
+    rate = rospy.Rate(30)
     while not rospy.is_shutdown():
         if goal:
             arucopose(goal)

@@ -29,7 +29,7 @@ class GoalPublisher():
         self.goal.header.frame_id = self.goal_frame
         self.pub_goal  = rospy.Publisher(self.goal_topic, Position, queue_size=10)
         # Delay briefly for publisher to initialize
-        rospy.sleep(1)
+        rospy.sleep(.1)
 
 
     def goal_build(self, x, y, z, yaw):
