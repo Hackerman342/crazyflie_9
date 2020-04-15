@@ -86,7 +86,7 @@ if __name__ == '__main__':
                 init_tf.transform.rotation.z,
                 init_tf.transform.rotation.w)
     _, _, yaw = euler_from_quaternion(init_quat)
-    goal.yaw = yaw*(180/math.pi)
+    goal.yaw = math.degrees(yaw)
 
     print('Initial goal = starting position')
     print(goal)
@@ -112,11 +112,10 @@ if __name__ == '__main__':
 
         if goal:
             try:
-                # Map in Odom coords (order very important!!)
+                # Map in odom coords (order very important!!)
                 odom_tf = tf_buffer.lookup_transform("cf1/odom", "map", rospy.Time.now())
             except:
                 pass # Keep old transform
-            # print(odom_tf)
             odom_trans = (odom_tf.transform.translation.x,
                         odom_tf.transform.translation.y,
                         odom_tf.transform.translation.z)
@@ -133,7 +132,7 @@ if __name__ == '__main__':
             height = goal.z # Store/maintain given height
             # Goal in map coords
             tmat_goal = translation_matrix((goal.x, goal.y, goal.z))
-            qmat_goal = quaternion_matrix(quaternion_from_euler(0, 0, goal.yaw))
+            qmat_goal = quaternion_matrix(quaternion_from_euler(0, 0, math.radians(goal.yaw)))
             goal_matrix = np.dot(tmat_goal, qmat_goal)
 
             # Goal in odom coords
@@ -142,6 +141,7 @@ if __name__ == '__main__':
             goal.x = trans[0]
             goal.y = trans[1]
             goal.z = height
+
             _, _, yaw = euler_from_quaternion(quaternion_from_matrix(final_mat))
             goal.yaw = math.degrees(yaw)
             # goal.header.frame_id = "cf1/odom"

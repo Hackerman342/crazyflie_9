@@ -60,8 +60,8 @@ if __name__ == '__main__':
     goalpub = GoalPublisher()
     rospy.loginfo("Successful execution of init function")
 
-    runtime = 1 # seconds
-    pubrate = 5
+    runtime = 2 # seconds
+    pubrate = 2
 
     rate = rospy.Rate(pubrate) # hz
     for i in range(runtime*pubrate):
