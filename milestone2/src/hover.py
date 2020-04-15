@@ -37,7 +37,7 @@ def goal_callback(msg):
     # goal.yaw=yaw+goal.yaw
 
 # sub = rospy.Subscriber("cf1/pose", PoseStamped, pos_callback)
-hover_publisher=rospy.Publisher("/cf1/cmd_position", Position,queue_size=10) #Publishes current height and position
+hover_publisher=rospy.Publisher("/cf1/cmd_position", Position, queue_size=10) #Publishes current height and position
 hover_sub=rospy.Subscriber("goal", Position, goal_callback)
 
 
@@ -143,7 +143,7 @@ if __name__ == '__main__':
             goal.y = trans[1]
             goal.z = height
             _, _, yaw = euler_from_quaternion(quaternion_from_matrix(final_mat))
-            goal.yaw = yaw*(180/math.pi)
+            goal.yaw = math.degrees(yaw)
             # goal.header.frame_id = "cf1/odom"
             print('GOAL!!!!')
             print("Transformed goal 'cf1/odom'")

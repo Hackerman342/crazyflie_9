@@ -21,15 +21,15 @@ class GoalPublisher():
         param = rospy.search_param("goal_pose")
         self.goal_pose_string = rospy.get_param(param)
         self.goal_pose_list = list(self.goal_pose_string.split(", "))
-        self.goal_pose = [float(i) for i in self.goal_pose_list]         
-        
-        
+        self.goal_pose = [float(i) for i in self.goal_pose_list]
+
+
         # Initialize goal message and publisher
         self.goal = Position()
         self.goal.header.frame_id = self.goal_frame
         self.pub_goal  = rospy.Publisher(self.goal_topic, Position, queue_size=10)
         # Delay briefly for publisher to initialize
-        rospy.sleep(.1)
+        rospy.sleep(.3)
 
 
     def goal_build(self, x, y, z, yaw):
@@ -46,7 +46,7 @@ class GoalPublisher():
         g = self.goal_pose
         self.goal_build(g[0], g[1], g[2], g[3])
         if self.goal.z == 0.0:
-            self.goal.z = 0.2        
+            self.goal.z = 0.4
             # Send goal
         self.pub_goal.publish(self.goal)
         rospy.loginfo("New goal sent")
@@ -56,18 +56,18 @@ class GoalPublisher():
 if __name__ == '__main__':
     rospy.init_node('goal_pub', anonymous=True)
     rospy.loginfo("Successful initilization of node")
-    
+
     goalpub = GoalPublisher()
     rospy.loginfo("Successful execution of init function")
-    
-    #runtime = 5 # seconds
-    #pubrate = 30
 
-    #rate = rospy.Rate(pubrate) # hz
-    #for i in range(runtime*pubrate):
-    goalpub.goal_pub()
-    #rate.sleep()
-    
+    runtime = 1 # seconds
+    pubrate = 5
+
+    rate = rospy.Rate(pubrate) # hz
+    for i in range(runtime*pubrate):
+        goalpub.goal_pub()
+        rate.sleep()
+
     rospy.loginfo("Successfully ran script")
 
     # def publish_cmd(goal):
