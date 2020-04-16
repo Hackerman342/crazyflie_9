@@ -21,7 +21,13 @@ def goal_callback(msg):
 
 
 def arucopose(data):
-
+    global counter
+    global x_average
+    global y_average
+    global z_average
+    global roll_average
+    global pitch_average
+    global yaw_average
 
     for elm in data.markers:
     # if len(data.markers) > 0:
@@ -104,29 +110,80 @@ def arucopose(data):
         aruco_pos_final = tfBuffer.transform(t_aruco_rotation,'cf1/odom', rospy.Duration(1))
         # aruco_pos_after_rotation = tfBuffer.lookup_transform('cf1/odom',  t_aruco_rotation.child_frame_id , rospy.Duration(0.5) ) 
 
-        #Perform final update of the odometry frame
-
-        t_final_odom_update=TransformStamped()
-        t_final_odom_update.header.stamp = rospy.Time.now()
-        t_final_odom_update.header.frame_id = "map"
-        t_final_odom_update.child_frame_id = 'cf1/odom'
+       
 
         # Difference between real aruco position in map and the position of the aruco after the rotation is performed
-
-        t_final_odom_update.transform.translation.x = x_map -  aruco_pos_final.pose.position.x
-        t_final_odom_update.transform.translation.y = y_map -  aruco_pos_final.pose.position.y
-        t_final_odom_update.transform.translation.z = z_map -   aruco_pos_final.pose.position.z
+        
+        
+        x_add= x_map -  aruco_pos_final.pose.position.x
+        y_add= y_map -  aruco_pos_final.pose.position.y
+        z_add = z_map -   aruco_pos_final.pose.position.z
 
 
 
         # Set orienttion to same as in t_update_odom_rotation
 
-        t_final_odom_update.transform.rotation.x=qr[0]
-        t_final_odom_update.transform.rotation.y=qr[1]
-        t_final_odom_update.transform.rotation.z=qr[2]
-        t_final_odom_update.transform.rotation.w=qr[3]
+        qr_0_add=qr[0]
+        qr_1_add=qr[1]
+        qr_2_add=qr[2]
+        qr_3_add=qr[3]
 
-        br.sendTransform(t_final_odom_update)
+        orientation_add= euler_from_quaternion((qr_0_add,qr_1_add,qr_2_add,qr_3_add))
+        x_average.append(x_add)
+        y_average.append(y_add)
+        z_average.append(z_add)
+
+        roll_average.append(orientation_add[0])
+        pitch_average.append(orientation_add[1])
+        yaw_average.append(orientation_add[2])
+
+
+        counter+=1
+        if counter > 10:
+             #Perform final update of the odometry frame
+
+            t_final_odom_update=TransformStamped()
+            t_final_odom_update.header.stamp = rospy.Time.now()
+            t_final_odom_update.header.frame_id = "map"
+            t_final_odom_update.child_frame_id = 'cf1/odom'
+
+            x_final=sum(x_average)/len(x_average)
+            y_final=sum(y_average)/len(y_average)
+            z_final=sum(z_average)/len(z_average)
+            
+            t_final_odom_update.transform.translation.x=x_final
+            t_final_odom_update.transform.translation.y=y_final
+            t_final_odom_update.transform.translation.z=z_final
+
+            roll_final=sum(roll_average)/len(roll_average)
+            pitch_final=sum(pitch_average)/len(pitch_average)
+            yaw_final=sum(yaw_average)/len(yaw_average)
+
+            
+
+            final_rotation = quaternion_from_euler(roll_final, pitch_final, yaw_final)
+
+
+            t_final_odom_update.transform.rotation.x=final_rotation[0]
+            t_final_odom_update.transform.rotation.y=final_rotation[1]
+            t_final_odom_update.transform.rotation.z=final_rotation[2]
+            t_final_odom_update.transform.rotation.w=final_rotation[3]
+
+
+            br.sendTransform(t_final_odom_update)
+
+            counter=0
+
+            x_average=[]
+            y_average=[]
+            z_average=[]
+
+            roll_average=[]
+            pitch_average=[]
+            yaw_average=[]
+
+
+
 
 
 
@@ -156,9 +213,20 @@ tf=tf2_ros.TransformListener(tfBuffer)
 aruco_sub=rospy.Subscriber("/aruco/markers", MarkerArray, goal_callback) # Sees aruco -> go to aurocopose function
 goal = None
 
+# ADDED HERE!!!!!!!!!!!!!!!!!!!!!
+counter=0
+x_average=[]
+y_average=[]
+z_average=[]
+            
+roll_average=[]
+pitch_average=[]
+yaw_average=[]
+# ADDED ABOVE!!!!!!!!!!!!!!!!!!!!!
+
 if __name__ == "__main__":
 
-    rate = rospy.Rate(5)
+    rate = rospy.Rate(20)
     while not rospy.is_shutdown():
         if goal:
             arucopose(goal)
