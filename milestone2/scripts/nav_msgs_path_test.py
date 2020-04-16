@@ -1,68 +1,43 @@
+#!/usr/bin/env python
 import rospy
-import tf
+from tf.transformations import quaternion_from_euler
 from nav_msgs.msg import Path
+from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped
 
-import math
-
-def frange(x, y, jump):
-    while x < y:
-        yield x
-        x += jump
-
-def main():
-    rospy.init_node('astroid_curve_publisher')
-    
-    path_pub = rospy.Publisher('astroid_path', Path, queue_size=10)
+def publish_path():
+    rospy.init_node('nav_msgs_path_test')
+    path_pub = rospy.Publisher('/path', Path, queue_size=10)
     path = Path()
-
-    path.header.frame_id = rospy.get_param('~output_frame', 'map')
-    radius = rospy.get_param('~radius', 10.0)
-    resolution = rospy.get_param('~resolution', 0.01)
-    holonomic = rospy.get_param('~holonomic', False)
-    offset_x = rospy.get_param('~offset_x', 0.0)
-    offset_y = rospy.get_param('~offset_y', 0.0)
-    update_rate = rospy.get_param('~update_rate', 0.3)
-
-    has_initialize = True
+    counter = 0
+    p = PoseStamped()
     
-    for t in frange(-math.pi, math.pi, resolution):
-        x = radius * math.cos(t) ** 3 + offset_x
-        y = radius * math.sin(t) ** 3 + offset_y
-        
-        if has_initialize:
-            old_x = x
-            old_y = y
-            has_initialize = False
-
-        pose = PoseStamped()
-        pose.pose.position.x = x
-        pose.pose.position.y = y
-        
-        yaw = 0.0
-        if holonomic:
-            yaw = -math.sin(t) / math.cos(t)
-        else:
-            if (-math.pi/2 <= t <= 0) or (math.pi/2 <= t <=math.pi):
-                yaw = math.atan2(old_y - y, old_x - x)
-            else:
-                yaw = math.atan2(y - old_y, x - old_x)
-        
-        q = tf.transformations.quaternion_from_euler(0, 0, yaw)
-        pose.pose.orientation.x = q[0]
-        pose.pose.orientation.y = q[1]
-        pose.pose.orientation.z = q[2]
-        pose.pose.orientation.w = q[3]
-        path.poses.append(pose)
-
-        old_x = x
-        old_y = y
+    p.pose.position.x = 3
+    p.pose.position.y = 0.0
+    p.pose.position.z = 0.22
     
-    r = rospy.Rate(update_rate)
+    p.pose.orientation.x = 0
+    p.pose.orientation.y = 0
+    p.pose.orientation.z = 0
+    p.pose.orientation.w = 1
+    # q = quaternion_from_euler(0.0, 0.0, numpy.deg2rad(90.0))
+    # p.pose.orientation = Quaternion(*q)
+    rate = rospy.Rate(1) # 1Hz
     while not rospy.is_shutdown():
+        
         path.header.stamp = rospy.Time.now()
+        path.header.frame_id = str(counter)
+        p.header.stamp = rospy.Time.now()
+        p.header.frame_id = str(counter)
+        path.poses.append(p)
+        rospy.loginfo('I have %d', path.poses[0].pose.position.x)
         path_pub.publish(path)
-        r.sleep()
-    
+        counter += 1
+        rate.sleep()
+
 if __name__ == '__main__':
-    main()
+    try:
+        publish_path()
+    except rospy.ROSInterruptException:
+        pass
+
