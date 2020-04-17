@@ -16,9 +16,10 @@
     <!-- <include file="$(find dd2419_simulation)/launch/aruco.launch" /> -->
     <!-- <include file="$(find flight_camp)/launch/aruco_drone_tf.launch" /> -->
 
-    <!-- <node type="localization.py" name="localization" pkg="milestone3" output="screen" /> -->
+    <include file="$(find milestone3)/launch/multi_road_sign_pose.launch" /> -->
     <node type="Localization_V2.py" name="Localization" pkg="milestone3" output="screen" />
 
+    <node pkg="milestone2" type="clear_checkpoint_service" name="clear_checkpoint_service" />
 
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find milestone3)/include/milestone3.rviz" output="screen" />
     <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 1 map cf1/odom" />

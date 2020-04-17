@@ -70,7 +70,7 @@ if __name__ == '__main__':
         init_tf = tf_buffer.lookup_transform("map", "cf1/base_link", rospy.Time.now(), rospy.Duration(10))
         # init_tf.transform.translation.z = 0.6
     except:
-        print('Caught exception looking up map - >cf1/base_link tf')
+        print('Caught exception looking up map -> cf1/base_link tf')
         init_tf = TransformStamped()
         init_tf.transform.translation.x = 0.5
         init_tf.transform.translation.y = 0.5

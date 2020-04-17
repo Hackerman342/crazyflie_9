@@ -18,10 +18,10 @@
   <arg name="true_sign_frame_3"                 default="residential/true"/>
   <arg name="true_sign_frame_4"                 default="roundabout/true"/>
 
-  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_sign_1" args="0.2 1.25 0.6 1.57 -1.57 1.57 map $(arg true_sign_frame_1)" />
+  <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_sign_1" args="0.2 1.25 0.6 1.57 -1.57 1.57 map $(arg true_sign_frame_1)" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_sign_2" args="1.3 0.4 0.6 1.57 -1.57 0 map $(arg true_sign_frame_2)" />
   <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_sign_3" args="0.6 1.25 0.6 1.57 -1.57 1.57 map $(arg true_sign_frame_3)" />
-  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_sign_4" args="0.22 0.0 0.6 1.57 -1.57 -1.57 map $(arg true_sign_frame_4)" />
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_sign_4" args="0.22 0.0 0.6 1.57 -1.57 -1.57 map $(arg true_sign_frame_4)" /> -->
 
 
   <node name="multiclass_road_sign_pose" pkg="milestone3" type="multiclass_road_sign_pose.py" output="screen">

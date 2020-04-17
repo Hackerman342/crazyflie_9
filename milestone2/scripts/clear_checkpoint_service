@@ -5,17 +5,20 @@ from tf.transformations import euler_from_quaternion
 from crazyflie_driver.msg import Position
 from geometry_msgs.msg import TransformStamped, Vector3, PoseStamped
 import numpy as np
-from std_srvs.srv import Empty, EmptyResponse 
+from std_srvs.srv import Empty, EmptyResponse
 
 
 def current_position(msg):
-    global yaw,x,y,z 
+    global yaw,x,y,z
 
     quat = msg.pose.orientation
     _, _, yaw_rad = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
-    x=msg.pose.position.x
-    y=msg.pose.position.y
-    z=msg.pose.position.z
+    # x=msg.pose.position.x
+    # y=msg.pose.position.y
+    # z=msg.pose.position.z
+    x=0
+    y=0.8
+    z=0.6
     yaw = round((180./np.pi)*yaw_rad)
 
 
@@ -25,36 +28,36 @@ def spin_360(msg):
     cmd.yaw=yaw
     cmd.x=x
     cmd.y=y
-    cmd.z=0.4
+    cmd.z=0.6
     pos_publish.publish(cmd)
     rotation=0
-    
+
 
     while rotation <360:
 
         cmd.yaw+=rotaterate
-        cmd.z=0.4
+        cmd.z=0.6
         pos_publish.publish(cmd)
         rotation+=rotaterate
         rospy.sleep(1)
-        
-    
-    
-        
+
+
+
+
 
     return EmptyResponse()
 
 
-    
 
-rotaterate=10
+
+rotaterate=30
 current_pose=rospy.Subscriber("cf1/pose", PoseStamped, current_position)
-pos_publish=rospy.Publisher("/cf1/cmd_position", Position,queue_size=10)
+pos_publish=rospy.Publisher("goal", Position,queue_size=10)
 
 if __name__=="__main__":
     rospy.init_node('clear_checkpoint_node')
-    
+
     s = rospy.Service('clearpointservice', Empty, spin_360)
     rospy.spin()
-    
+
 
