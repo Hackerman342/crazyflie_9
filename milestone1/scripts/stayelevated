@@ -80,15 +80,3 @@ if __name__ == '__main__':
             # publish(last_msg)
         rate.sleep()
 
-          
-
-            
-
-
-    # rospy.spin()
-
-            
-
-
-    # rospy.spin()
-    

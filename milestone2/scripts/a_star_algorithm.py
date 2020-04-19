@@ -59,7 +59,7 @@ class AStarPlanner:
 
         while 1:
             if len(open_set) == 0:
-                print("Open set is empty..")
+                # print("Open set is empty..")
                 break
 
             c_id = min(

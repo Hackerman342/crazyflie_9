@@ -40,4 +40,3 @@ if __name__ == '__main__':
         publish_path()
     except rospy.ROSInterruptException:
         pass
-

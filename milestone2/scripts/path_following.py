@@ -21,25 +21,30 @@ def publish_path():
     pathyaw = [0]*20
     cmd = Position()
 
-    cmd.header.stamp = rospy.Time.now()
-    cmd.header.frame_id = '10' # a simple random number
-
+     # a simple random number
+    counter = 0
 
     pub = rospy.Publisher('/cf1/cmd_position', Position, queue_size=2)
-    rate = rospy.Rate(1) # 10hz
+    rate = rospy.Rate(5) # 10hz
     while not rospy.is_shutdown():
         for i in range(20):
-            cmd.x = pathx[i]
-            cmd.y = pathy[i]
-            cmd.z = pathz[i]
-            cmd.yaw = pathyaw[i]
+            cmd.x = round(pathx[i],2)
+            cmd.y = round(pathy[i],2)
+            cmd.z = round(pathz[i],2)
+            cmd.yaw = round(pathyaw[i],2)
+            counter += 1
+            cmd.header.stamp = rospy.Time.now()
+            cmd.header.frame_id = str(counter)
             pub.publish(cmd)
             rate.sleep()
         for j in range(20):
-            cmd.x = pathx[19-j]
-            cmd.y = pathy[19-j]
-            cmd.z = pathz[19-j]
-            cmd.yaw = pathyaw[19-j]
+            cmd.x = round(pathx[19-j],2)
+            cmd.y = round(pathy[19-j],2)
+            cmd.z = round(pathz[19-j],2)
+            cmd.yaw = round(pathyaw[19-j],2)
+            counter += 1
+            cmd.header.stamp = rospy.Time.now()
+            cmd.header.frame_id = str(counter)
             pub.publish(cmd)
             rate.sleep()
 
