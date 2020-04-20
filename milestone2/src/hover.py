@@ -90,7 +90,7 @@ if __name__ == '__main__':
 
     print('Initial goal = starting position')
     print(goal)
-    rospy.sleep(3)
+    rospy.sleep(5)
     # height = init_tf.transform.translation.z
 
     # init_trans = (init_tf.transform.translation.x,
