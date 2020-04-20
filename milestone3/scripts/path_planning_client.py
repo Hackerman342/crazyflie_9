@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+import sys
+import rospy
+# from std_srvs.srv import Empty, EmptyResponse
+# from beginner_tutorials.srv import *
+from beginner_tutorials.srv import PathPlanning, PathPlanningResponse
+
+
+def path_planning_client(start_x, start_y, end_x, end_y):
+    rospy.wait_for_service('path_planning')
+    try:
+        path_planning = rospy.ServiceProxy('path_planning', PathPlanning)
+        path = path_planning(start_x, start_y, end_x, end_y) # request message
+        return path
+    except rospy.ServiceException, e:
+        print "Service call failed: %s"%e
+
+def usage():
+    return "%s [x y]"%sys.argv[0]
+
+if __name__ == "__main__":
+    # Given when you call the client node
+    if len(sys.argv) == 5:
+        start_x = int(sys.argv[1])
+        start_y = int(sys.argv[2])
+        end_x = int(sys.argv[3])
+        end_y = int(sys.argv[4])
+    else:
+        print usage()
+        sys.exit(1)
+
+    # Given in the code
+    # a = 75.0  # [m]
+    # b = 100.0  # [m]
+    # c = 120.0  # [m]
+    # d = 120.0  # [m] 
+    
+    print "From (%s,%s) to (%s,%s), the path is"%(start_x, start_y, end_x, end_y)
+    
+    path = path_planning_client(start_x, start_y, end_x, end_y) # request message
+    print(path)
