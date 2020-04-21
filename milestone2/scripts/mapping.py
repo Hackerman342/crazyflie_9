@@ -100,8 +100,8 @@ class Mapping:
     def clean_map(self, start, end, expansion, step_size):
         # Generating a zero matrix for the entire map + some extending it a bit
         # since markers could be outside the airspace
-        x = (end[0] - start[0] + expansion)/step_size
-        y = (end[1] - start[1] + expansion)/step_size
+        x = (end[0] + abs(start[0]) + expansion)/step_size
+        y = (end[1] + abs(start[1]) + expansion)/step_size
         map_matrix = np.zeros((int(x), int(y)))
         return map_matrix
        
