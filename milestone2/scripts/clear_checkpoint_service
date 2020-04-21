@@ -3,61 +3,70 @@ import sys
 import rospy
 from tf.transformations import euler_from_quaternion
 from crazyflie_driver.msg import Position
-from geometry_msgs.msg import TransformStamped, Vector3, PoseStamped
+from geometry_msgs.msg import TransformStamped, Vector3, PoseStamped, Point
 import numpy as np
 from std_srvs.srv import Empty, EmptyResponse
+from crazyflie_driver.srv import GoToRequest, GoToResponse, GoTo
 
+# def current_position(msg):
+#     global yaw,x,y,z
 
-def current_position(msg):
-    global yaw,x,y,z
+#     quat = msg.pose.orientation
+#     _, _, yaw_rad = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
+#     # x=msg.pose.position.x
+#     # y=msg.pose.position.y
+#     # z=msg.pose.position.z
 
-    quat = msg.pose.orientation
-    _, _, yaw_rad = euler_from_quaternion([quat.x, quat.y, quat.z, quat.w])
-    # x=msg.pose.position.x
-    # y=msg.pose.position.y
-    # z=msg.pose.position.z
-    x=0
-    y=0.8
-    z=0.6
-    yaw = round((180./np.pi)*yaw_rad)
+#     """
+#     CHANGE THESE TO READ POSE FROM END OF PATH OR GOAL POSE OR SIMILAR (EASIER?)
+#     OR FIND A WAY TO SEND X, Y, Z, YAW COORDS IN THE SERVICE CALL (BETTER?)
+#     """
+#     x=0
+#     y=0.8
+#     z=0.6
+#     yaw = round((180./np.pi)*yaw_rad)
 
 
 def spin_360(msg):
+    x = msg.goal.x
+    y = msg.goal.y
+    z = msg.goal.z
+    yaw = msg.yaw
+
     print("In spin_360")
     cmd=Position()
     cmd.yaw=yaw
     cmd.x=x
     cmd.y=y
-    cmd.z=0.6
+    cmd.z=z
+
+    print(cmd)
     pos_publish.publish(cmd)
+
+    rotaterate=45
+    rate = rospy.Rate(1)
+
     rotation=0
-
-
-    while rotation <360:
+    while rotation < 360:
 
         cmd.yaw+=rotaterate
-        cmd.z=0.6
         pos_publish.publish(cmd)
         rotation+=rotaterate
-        rospy.sleep(1)
+        rate.sleep()
+
+    return GoToResponse()
 
 
 
 
 
-    return EmptyResponse()
-
-
-
-
-rotaterate=30
-current_pose=rospy.Subscriber("cf1/pose", PoseStamped, current_position)
+# current_pose=rospy.Subscriber("cf1/pose", PoseStamped, current_position)
 pos_publish=rospy.Publisher("goal", Position,queue_size=10)
 
 if __name__=="__main__":
     rospy.init_node('clear_checkpoint_node')
 
-    s = rospy.Service('clearpointservice', Empty, spin_360)
+    s = rospy.Service('clearpointservice', GoTo, spin_360)
     rospy.spin()
 
 
