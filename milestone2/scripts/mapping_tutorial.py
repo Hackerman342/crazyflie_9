@@ -6,6 +6,7 @@ from mapping import Mapping
 import matplotlib.pyplot as plt
 import rospy
 from std_srvs.srv import SetBool
+from nav_msgs.msg import OccupancyGrid
 
 # Mapping tutorial
 
@@ -13,16 +14,25 @@ from std_srvs.srv import SetBool
 # This matrix is the map, where 0 is free space, 1 is wall, 4 is aruco marker and 5 is a road sign
 # You can create more interesting maps by creating a new json file with a more interesting layout
 # The argument "awesome.world.json" demands that the json file is in the same folder.
-mapp = Mapping("/home/johna/dd2419_ws/src/crazyflie_9/milestone2/scripts/awesome.world.json", 0.1, 2)
+mapp = Mapping("/home/johna/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json", 0.1, 2)
 
 # This gives us the map matrix, which we can use to do path planning with.
-matrx = mapp.matrix
+# matrx = mapp.matrix
+
+markers, signs = mapp.object_poses()
+
+for marker in markers:
+    print marker
+
+for sign in signs:
+    print sign
 
 # Since the matrix doesn't have negative indices we need to change the axis when plotting the image
-plt.imshow(matrx, extent=[-matrx.shape[1]/2., matrx.shape[1]/2., -matrx.shape[0]/2., matrx.shape[0]/2.])
-matrx_indx = np.nonzero(matrx == 1)
-oy = matrx_indx[0].tolist()
-ox = matrx_indx[1].tolist()
+# plt.imshow(matrx, extent=[-matrx.shape[1]/2., matrx.shape[1]/2., -matrx.shape[0]/2., matrx.shape[0]/2.])
+# matrx_indx = np.nonzero(matrx == 1)
+# oy = matrx_indx[0].tolist()
+# ox = matrx_indx[1].tolist()
 
-plt.show()
+
+# plt.show()
 print("Stop for check the matrix variable.(USED FOR DEBUG)")

@@ -185,6 +185,27 @@ class Mapping:
     def wall_values(self):
         pass
 
+    def object_poses(self):
+        
+        # Create a list of lists containing the poses of the markers and signs.
+        markers = []
+        signs = []
+
+        for object in self.map_data["markers"]:
+            # Place holder for name or ID if needed.
+            name = object["id"]
+            pose = object["pose"]["position"] + object["pose"]["orientation"]
+            
+            markers.append((name, pose))
+
+        for object in self.map_data["roadsigns"]:
+            # Place holder for name or ID if needed.
+            name = object["sign"]
+            pose = object["pose"]["position"] + object["pose"]["orientation"]
+            signs.append((name, pose))
+        
+        return markers, signs
+
     
 """
 def create_map(x):
