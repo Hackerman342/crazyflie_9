@@ -22,6 +22,7 @@ def mappublisher(height, width, resolutotion, map_origin, map_data):
     msg = OccupancyGrid()
     #map_data = Mapping("/home/johna/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json", resolution, 0)
     msg.header.frame_id = 'map'
+    msg.header.stamp = rospy.Time.now()
     msg.info.resolution = resolutotion
     msg.info.width      = math.ceil(width/resolutotion)
     msg.info.height     = math.ceil(height/resolutotion)
@@ -45,7 +46,7 @@ def mappublisher(height, width, resolutotion, map_origin, map_data):
             idx += 1
 
     msg.data = data
-    print(msg.data)
+    # print(msg.data)
     mappub.publish(msg)
 
 if __name__ == "__main__":
