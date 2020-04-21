@@ -4,7 +4,7 @@ import sys
 import rospy
 # from std_srvs.srv import Empty, EmptyResponse
 # from beginner_tutorials.srv import *
-from beginner_tutorials.srv import PathPlanning, PathPlanningResponse
+from milestone3.srv import PathPlanning, PathPlanningResponse
 
 
 def path_planning_client(start_x, start_y, end_x, end_y):

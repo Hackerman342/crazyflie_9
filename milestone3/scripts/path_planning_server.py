@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 import rospy
-from beginner_tutorials.srv import PathPlanning, PathPlanningResponse
+from milestone3.srv import PathPlanning, PathPlanningResponse
 # from std_srvs.srv import Empty, EmptyResponse
 from std_msgs.msg import String
-from beginner_tutorials.msg import Position
+# from beginner_tutorials.msg import Position
 from find_path import *
 
 def handle_path_planning(req): # req means request
