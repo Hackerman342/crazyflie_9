@@ -11,6 +11,7 @@ def path_planning_client(start_x, start_y, end_x, end_y):
     rospy.wait_for_service('path_planning')
     try:
         path_planning = rospy.ServiceProxy('path_planning', PathPlanning)
+        print("Here is OK")
         path = path_planning(start_x, start_y, end_x, end_y) # request message
         return path
     except rospy.ServiceException, e:

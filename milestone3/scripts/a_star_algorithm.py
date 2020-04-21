@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 show_animation = False
-location = '/home/zihan/dd2419_ws/src/crazyflie9/milestone3/include/tutorial_1.world.json' # May need to change relative path
+location = '/home/zihan/dd2419_ws/src/crazyflie_9/milestone3/include/tutorial_1.world.json' # May need to change relative path
 
 class AStarPlanner:
 

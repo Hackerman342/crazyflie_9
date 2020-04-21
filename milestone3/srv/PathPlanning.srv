@@ -1,7 +1,7 @@
-int64 start_x
-int64 start_y
-int64 end_x
-int64 end_y
+float64 start_x
+float64 start_y
+float64 end_x
+float64 end_y
 ---
 float32[] rx
 float32[] ry
