@@ -33,7 +33,7 @@ def mappublisher(height, width, resolutotion, map_origin, map_data):
 
     matrx = map_data.matrix
     # matrx = np.rot90(np.rot90(np.rot90(matrx)))
-    matrx = np.rot90(matrx, 3)
+    # matrx = np.rot90(matrx, 3)
 
     idx = 0
     #for row in map_data.matrix:
