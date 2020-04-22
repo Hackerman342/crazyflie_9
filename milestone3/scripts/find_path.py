@@ -5,11 +5,11 @@ def find_path(sx, sy, gx, gy):
     # sx = 75.0  # [m]
     # sy = 100.0  # [m]
     # gx = 120.0  # [m]
-    # gy = 120.0  # [m] 
-    
+    # gy = 120.0  # [m]
+
     grid_size = 2.0  # [m]
     robot_radius = 1.0  # [m]
-    location = '/home/zihan/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json' 
+    location = '/home/robot/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json'
     # mapp = Mapping(location, 0.1, 3)
     mapp = Mapping(location, 0.05, 2)
     matrx = mapp.matrix
@@ -32,7 +32,7 @@ def find_path(sx, sy, gx, gy):
 
     rx.reverse()
     ry.reverse()
-    rx_new = [i-mapp.x_conv for i in rx]
-    ry_new = [i-mapp.y_conv for i in ry]
-    return rx_new,ry_new
+    # rx_new = [i-mapp.x_conv for i in rx]
+    # ry_new = [i-mapp.y_conv for i in ry]
+    return rx,ry
     # return rx,ry

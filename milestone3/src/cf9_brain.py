@@ -40,28 +40,25 @@ class CrazyflieBrain():
         rospy.wait_for_service('path_planning')
         print('got path planning service')
 
-        # path_planning = rospy.ServiceProxy('path_planning', PathPlanning)
-        # path = path_planning(start_x, start_y, end_x, end_y)
-
-        
 
         # Initialize callback variables
         self.boxes = None
+
+        # Initialize tfbuffer
+        self.tf_buffer = tf2_ros.Buffer()
+        tf2_ros.TransformListener(self.tf_buffer)
 
         # Initialize goal publisher (for interacting with 'hover' node)
         self.goal_pub = rospy.Publisher("goal", Position, queue_size=10)
 
         # Initialize subscriber to bounding box
-        rospy.Subscriber(self.bounding_boxes_top, BoundingBoxes, self.detection_cb)
+        rospy.Subscriber(self.bounding_boxes_top, BoundingBoxes, self._detection_cb)
 
+        # Pause for subscription and tf_buffer
+        rospy.sleep(5)
 
-    def detection_cb(self, msg):
-        # # Get timestamp from message and image
-        # self.img_time = msg.image_header.stamp.secs + (10**-9)*msg.image_header.stamp.nsecs # Time image was actually taken
-        # self.header_time = msg.header.stamp.secs + (10**-9)*msg.header.stamp.nsecs # Time reading is received
-        # Read boxes
+    def _detection_cb(self, msg):
         self.boxes = msg.bounding_boxes
-
 
 
     def state_machine(self):
@@ -76,7 +73,7 @@ class CrazyflieBrain():
 
             Repeat for next sign
         """
-        
+
         roundabout_pose = Position()
         roundabout_pose.x = 0.0
         roundabout_pose.y = 0.7
@@ -84,28 +81,6 @@ class CrazyflieBrain():
         roundabout_pose.yaw = 0.0
 
         self.obstacle_sequence('roundabout', roundabout_pose)
-
-
-        """ Temporary manual path plan between signs"""
-        temp_pose = Position()
-        roundabout_pose.x = -0.25
-        roundabout_pose.y = 0.5
-        roundabout_pose.z = 0.6
-        roundabout_pose.yaw = 90.0
-        self.goal_pub.publish(temp_pose)
-        rospy.sleep(2)
-
-        roundabout_pose.x = -0.5
-        roundabout_pose.y = 0.4
-        roundabout_pose.yaw = 180.0
-        self.goal_pub.publish(temp_pose)
-        rospy.sleep(5)
-
-        roundabout_pose.x = -0.75
-        roundabout_pose.y = 0.4
-        self.goal_pub.publish(temp_pose)
-        rospy.sleep(2)
-
 
         narrow_left_pose = Position()
         narrow_left_pose.x = -0.9
@@ -118,31 +93,68 @@ class CrazyflieBrain():
         rospy.loginfo('Finished!!!')
 
 
-    
-    def obstacle_sequence(self, sign_class, observe_pose):
-        """ Go to pose """
-        # Call path planning and following sequence
-        path_planning = rospy.ServiceProxy('path_planning', PathPlanning)
 
-        tf_buffer = tf2_ros.Buffer()
-        tf2_ros.TransformListener(tf_buffer)
-        rospy.sleep(1)
-        init_tf = tf_buffer.lookup_transform("map", "cf1/base_link", rospy.Time.now(), rospy.Duration(10))
+    def obstacle_sequence(self, sign_class, observe_pose):
+
+        """ Go to pose """
+
+        start_pose_ = self.tf_buffer.lookup_transform("map", "cf1/base_link", rospy.Time.now(), rospy.Duration(10))
+
         # use tf to get the start_x .... and end_y in the map frame.
         resolution = 0.05
-        start_x = round(init_tf.transform.translation.x/resolution)  # transfer it from meters to pixels
-        start_y = round(init_tf.transform.translation.y/resolution)
-        end_x = observe_pose.x
-        end_y = observe_pose.y
+        start_x = int(round(-start_pose_.transform.translation.x/resolution)+100)  # transfer it from meters to pixels
+        start_y = int(round(-start_pose_.transform.translation.y/resolution)+100)
+        end_x = int(round(-observe_pose.x/resolution)+100)
+        end_y = int(round(-observe_pose.y/resolution)+100)
+
+        # Call path planning and following sequence
+        path_planning = rospy.ServiceProxy('path_planning', PathPlanning)
         path = path_planning(start_x, start_y, end_x, end_y)
-        pathx = [c*resolution for c in path.rx] # In meters, which can be published to the /cf1/cmd_position
-        pathy = [c*resolution for c in path.ry] # In meters, which can be published to the /cf1/cmd_position
+
+
+        pathx = [-(c-100)*resolution for c in path.rx] # In meters, which can be published to the /cf1/cmd_position
+        pathy = [-(c-100)*resolution for c in path.ry] # In meters, which can be published to the /cf1/cmd_position
+        print("pathx: ", pathx)
+        print("pathy: ", pathy)
+        rospy.sleep(3) # Pause so humans can read path on screen
+
+
+        ###### From here DOWN as path_following() function ######
+
+        """
+        Add rotation to path direction before beginning path
+        """
+
+        path_pose = Position()
+        path_pose.z = 0.6
+        path_pose.yaw = 0.0
+
+        path_rate = rospy.Rate(0.5)
+        for i in range(len(pathx)):
+            path_pose.x = pathx[i]
+            path_pose.y = pathy[i]
+
+            #### Temporary and super cheesy ####
+            if i == 4 and sign_class == 'narrows_from_left':
+                path_pose.yaw = 90.0
+            if i == 5 and sign_class == 'narrows_from_left':
+                path_pose.yaw = 180.0
+            #### Temporary and super cheesy ####
+            """
+            Add yaw calc so direction follows direction of movement
+            """
+            self.goal_pub.publish(path_pose)
+            rospy.loginfo('Sent next path pose')
+            path_rate.sleep()
+
+        ###### From here UP as path_following() function ######
+
 
         self.goal_pub.publish(observe_pose)
-        print('once')
+        rospy.loginfo('Confirm at end of path - 1x')
         rospy.sleep(3)
         self.goal_pub.publish(observe_pose)
-        print('twice')
+        rospy.loginfo('Confirm at end of path - 2x')
         rospy.sleep(3)
 
         rospy.loginfo("Made it to pose for observing sign")
@@ -171,7 +183,7 @@ class CrazyflieBrain():
 
         try:
             checkpoint = rospy.ServiceProxy('clearpointservice', GoTo)
-                        
+
             # rospy.loginfo('Clearing checkpoint')
             checkpoint(clear_pose)
             # rospy.loginfo('Checkpoint cleared')

@@ -7,9 +7,9 @@ from mapping import Mapping
 import numpy as np
 import matplotlib.pyplot as plt
 
-# show_animation = False
-show_animation = True
-location = '/home/zihan/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json' 
+show_animation = False
+# show_animation = True
+location = '/home/robot/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json'
 # location = '/home/zihan/dd2419_ws/src/crazyflie_9/worlds_json/tutorial_1.world.json' # May need to change relative path
 
 class AStarPlanner:
@@ -146,7 +146,7 @@ class AStarPlanner:
         return pos
 
     def calc_xyindex(self, position, min_pos):
-        return round((position - min_pos) / self.reso)
+        return int(round((position - min_pos) / self.reso))
 
     def calc_grid_index(self, node):
         return (node.y - self.miny) * self.xwidth + (node.x - self.minx)
@@ -172,17 +172,17 @@ class AStarPlanner:
 
     def calc_obstacle_map(self, ox, oy):
 
-        self.minx = round(min(ox))
-        self.miny = round(min(oy))
-        self.maxx = round(max(ox))
-        self.maxy = round(max(oy))
+        self.minx = int(round(min(ox)))
+        self.miny = int(round(min(oy)))
+        self.maxx = int(round(max(ox)))
+        self.maxy = int(round(max(oy)))
         # print("minx:", self.minx)
         # print("miny:", self.miny)
         # print("maxx:", self.maxx)
         # print("maxy:", self.maxy)
 
-        self.xwidth = round((self.maxx - self.minx) / self.reso)
-        self.ywidth = round((self.maxy - self.miny) / self.reso)
+        self.xwidth = int(round((self.maxx - self.minx) / self.reso))
+        self.ywidth = int(round((self.maxy - self.miny) / self.reso))
         # print("xwidth:", self.xwidth)
         # print("ywidth:", self.ywidth)
 

@@ -20,6 +20,9 @@
     <node type="Localization_V2.py" name="Localization" pkg="milestone3" output="screen" />
 
     <node pkg="milestone2" type="clear_checkpoint_service" name="clear_checkpoint_service" />
+    <!-- <node pkg="milestone3" type="path_planning" name="path_planning" /> -->
+    <node type="path_planning_server.py" name="path_planning_server" pkg="milestone3" output="screen" />
+
 
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find milestone3)/include/milestone3.rviz" output="screen" />
     <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 1 map cf1/odom" /> -->
