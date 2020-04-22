@@ -185,14 +185,8 @@ def arucopose(data):
             pitch_average=[]
             yaw_average=[]
 
-    # Broadcast most up to date transform every loop
-    t_final_odom_update.header.stamp = rospy.Time.now()
-    br.sendTransform(t_final_odom_update)
 
-
-
-
-
+############ Begin node here ############
 
 rospy.init_node('Localization')
 
@@ -254,4 +248,9 @@ if __name__ == "__main__":
         if goal:
             arucopose(goal)
             goal = None
+
+        # Broadcast most recent averaged transform every loop
+        t_final_odom_update.header.stamp = rospy.Time.now()
+        br.sendTransform(t_final_odom_update)
+
         rate.sleep()
