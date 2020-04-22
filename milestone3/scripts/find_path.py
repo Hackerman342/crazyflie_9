@@ -6,18 +6,20 @@ def find_path(sx, sy, gx, gy):
     # sy = 100.0  # [m]
     # gx = 120.0  # [m]
     # gy = 120.0  # [m] 
+    
     grid_size = 2.0  # [m]
     robot_radius = 1.0  # [m]
 
     mapp = Mapping(location, 0.1, 3)
     matrx = mapp.matrix
     range_of_map = matrx.shape
+    # x_conv = mapp.x_conv
+
     horizonal = range_of_map[0]
     vertical = range_of_map[1]
     # print(matrx.shape)
     # print(horizonal)
     # print(vertical)
-
     # set obstable positions
     matrx_indx = np.nonzero(matrx == 1) # represent the walls
     oy_old = matrx_indx[0].tolist()
@@ -26,6 +28,10 @@ def find_path(sx, sy, gx, gy):
     ox = [horizonal-i for i in ox_old]
     a_star = AStarPlanner(ox, oy, grid_size, robot_radius)
     rx, ry = a_star.planning(sx, sy, gx, gy)
+
     rx.reverse()
     ry.reverse()
-    return rx,ry
+    rx_new = [i-mapp.x_conv for i in rx]
+    ry_new = [i-mapp.y_conv for i in ry]
+    return rx_new,ry_new
+    # return rx,ry
