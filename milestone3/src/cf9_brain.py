@@ -14,9 +14,13 @@ import tf2_geometry_msgs
 from tf.transformations import euler_from_quaternion, quaternion_from_euler, quaternion_multiply
 from geometry_msgs.msg import TransformStamped, PoseStamped
 from std_srvs.srv import Empty, EmptyResponse
+from milestone3.srv import PathPlanning, PathPlanningResponse
+
 from darknet_ros_msgs.msg import BoundingBoxes
 from crazyflie_driver.msg import Position
 from crazyflie_driver.srv import GoToRequest, GoToResponse, GoTo
+
+# /home/zihan/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json
 
 class CrazyflieBrain():
 
@@ -31,6 +35,15 @@ class CrazyflieBrain():
         print('waiting for service')
         rospy.wait_for_service('clearpointservice')
         print('got service')
+
+        print('waiting for path planning service')
+        rospy.wait_for_service('path_planning')
+        print('got path planning service')
+
+        # path_planning = rospy.ServiceProxy('path_planning', PathPlanning)
+        # path = path_planning(start_x, start_y, end_x, end_y)
+
+        
 
         # Initialize callback variables
         self.boxes = None
@@ -63,7 +76,7 @@ class CrazyflieBrain():
 
             Repeat for next sign
         """
-
+        
         roundabout_pose = Position()
         roundabout_pose.x = 0.0
         roundabout_pose.y = 0.7
@@ -105,10 +118,26 @@ class CrazyflieBrain():
         rospy.loginfo('Finished!!!')
 
 
-
+    
     def obstacle_sequence(self, sign_class, observe_pose):
         """ Go to pose """
         # Call path planning and following sequence
+        path_planning = rospy.ServiceProxy('path_planning', PathPlanning)
+
+        tf_buffer = tf2_ros.Buffer()
+        tf2_ros.TransformListener(tf_buffer)
+        rospy.sleep(1)
+        init_tf = tf_buffer.lookup_transform("map", "cf1/base_link", rospy.Time.now(), rospy.Duration(10))
+        # use tf to get the start_x .... and end_y in the map frame.
+        resolution = 0.05
+        start_x = round(init_tf.transform.translation.x/resolution)  # transfer it from meters to pixels
+        start_y = round(init_tf.transform.translation.y/resolution)
+        end_x = observe_pose.x
+        end_y = observe_pose.y
+        path = path_planning(start_x, start_y, end_x, end_y)
+        pathx = [c*resolution for c in path.rx] # In meters, which can be published to the /cf1/cmd_position
+        pathy = [c*resolution for c in path.ry] # In meters, which can be published to the /cf1/cmd_position
+
         self.goal_pub.publish(observe_pose)
         print('once')
         rospy.sleep(3)
@@ -142,6 +171,7 @@ class CrazyflieBrain():
 
         try:
             checkpoint = rospy.ServiceProxy('clearpointservice', GoTo)
+                        
             # rospy.loginfo('Clearing checkpoint')
             checkpoint(clear_pose)
             # rospy.loginfo('Checkpoint cleared')
@@ -154,6 +184,7 @@ class CrazyflieBrain():
         """ Fix odometry """
         # Send goal to look at marker
         # Call path planning and following sequence
+
         self.goal_pub.publish(observe_pose)
         print('once')
         rospy.sleep(3)
