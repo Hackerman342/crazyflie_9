@@ -16,8 +16,19 @@ from nav_msgs.msg import OccupancyGrid
 # The argument "awesome.world.json" demands that the json file is in the same folder.
 mapp = Mapping("/home/johna/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json", 0.1, 0)
 
+
 # This gives us the map matrix, which we can use to do path planning with.
 matrx = mapp.matrix
+
+
+
+xc = mapp.x_conv
+yc = mapp.y_conv
+
+
+# Real coordinate: x - x_conv, y - y_conv
+# Using your path planner you get (x, y) coordinates. Subtract (x_conv, y_conv) from each coordinate.
+
 
 markers, signs = mapp.object_poses()
 

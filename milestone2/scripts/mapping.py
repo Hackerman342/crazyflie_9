@@ -170,8 +170,10 @@ class Mapping:
     def add_objects(self, points, wall=False, marker=False, roadsign=False):
         # adding the assigned objects into the map matrix
         for p in points:
+
             yidx = self.y_conv + p[1]
             xidx = self.x_conv + p[0]
+            
             # yidx = conv[0] - p[0]
             # xidx = conv[1] + p[1]
             print(p)
