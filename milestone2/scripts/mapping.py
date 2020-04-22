@@ -110,6 +110,7 @@ class Mapping:
         yidx = int(yidx)
         xidx = int(xidx)
         for i in range(self.infl):
+            
             self.matrix[yidx, xidx + i] = 1
             self.matrix[yidx + i, xidx + i] = 1
             self.matrix[yidx + i, xidx] = 1
@@ -169,10 +170,11 @@ class Mapping:
     def add_objects(self, points, wall=False, marker=False, roadsign=False):
         # adding the assigned objects into the map matrix
         for p in points:
-            yidx = self.y_conv - p[0]
-            xidx = self.x_conv + p[1]
+            yidx = self.y_conv + p[1]
+            xidx = self.x_conv + p[0]
             # yidx = conv[0] - p[0]
             # xidx = conv[1] + p[1]
+            print(p)
             p_shift = (int(yidx), int(xidx))
             if wall == True:
                 self.matrix[p_shift] = 1
@@ -186,8 +188,9 @@ class Mapping:
         pass
 
     def object_poses(self):
-        
         # Create a list of lists containing the poses of the markers and signs.
+        # Returns two lists with tuples. First element in the tuple is the marker id or roadsign name
+        # Second element in the list is a list with the pose. [x y z angles] 
         markers = []
         signs = []
 
