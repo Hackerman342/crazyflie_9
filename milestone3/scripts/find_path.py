@@ -9,8 +9,9 @@ def find_path(sx, sy, gx, gy):
     
     grid_size = 2.0  # [m]
     robot_radius = 1.0  # [m]
-
-    mapp = Mapping(location, 0.1, 3)
+    location = '/home/zihan/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json' 
+    # mapp = Mapping(location, 0.1, 3)
+    mapp = Mapping(location, 0.05, 2)
     matrx = mapp.matrix
     range_of_map = matrx.shape
     # x_conv = mapp.x_conv

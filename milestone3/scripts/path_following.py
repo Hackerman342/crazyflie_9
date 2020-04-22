@@ -24,10 +24,10 @@ def publish_path():
     # pathx = [74.0, 76.0, 78.0, 80.0, 82.0, 84.0, 86.0, 88.0, 90.0, 92.0, 94.0, 96.0, 98.0, 100.0, 102.0, 104.0, 106.0, 108.0, 110.0, 112.0, 114.0, 116.0, 118.0, 120.0]
     # pathy = [100.0, 100.0, 100.0, 102.0, 102.0, 104.0, 106.0, 106.0, 106.0, 108.0, 108.0, 110.0, 110.0, 110.0, 112.0, 112.0, 114.0, 114.0, 116.0, 116.0, 118.0, 118.0, 118.0, 120.0]
     rospy.init_node('path_following', anonymous=True)
-    start_x = 75.0  # [m]
+    start_x = 120.0  # [m]
     start_y = 100.0  # [m]
-    end_x = 120.0  # [m]
-    end_y = 120.0  # [m] 
+    end_x = 20.0  # [m]
+    end_y = 100.0  # [m] 
     # rx,ry = find_path(start_x,start_y,end_x,end_y)
     path = path_planning_client(start_x, start_y, end_x, end_y) # request message
     print(path) # rx:[....]\n ry:[....]
@@ -37,10 +37,10 @@ def publish_path():
     #     print((path.rx[i]))
     # print(rx)
     # print(ry)
-    pathx = [c/100 for c in path.rx]
-    pathy = [c/100 for c in path.ry]
-    pathz = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9]
-    pathyaw = [0]*20
+    pathx = [c*0.05 for c in path.rx] # tranfer from pixels to meters
+    pathy = [c*0.05 for c in path.ry]
+    pathz = [0.6]*len(pathx)
+    pathyaw = [0]*len(pathx)
     cmd = Position()
 
     cmd.header.stamp = rospy.Time.now()
@@ -50,20 +50,20 @@ def publish_path():
     pub = rospy.Publisher('/cf1/cmd_position', Position, queue_size=2)
     rate = rospy.Rate(1) # 10hz
     while not rospy.is_shutdown():
-        for i in range(20):
+        for i in range(len(pathx)):
             cmd.x = pathx[i]
             cmd.y = pathy[i]
             cmd.z = pathz[i]
             cmd.yaw = pathyaw[i]
             pub.publish(cmd)
             rate.sleep()
-        for j in range(20):
-            cmd.x = pathx[19-j]
-            cmd.y = pathy[19-j]
-            cmd.z = pathz[19-j]
-            cmd.yaw = pathyaw[19-j]
-            pub.publish(cmd)
-            rate.sleep()
+        # for j in range(20):
+        #     cmd.x = pathx[19-j]
+        #     cmd.y = pathy[19-j]
+        #     cmd.z = pathz[19-j]
+        #     cmd.yaw = pathyaw[19-j]
+        #     pub.publish(cmd)
+        #     rate.sleep()
 
 if __name__ == '__main__':
     # if len(sys.argv) == 5:
@@ -77,5 +77,3 @@ if __name__ == '__main__':
     # end_y = 120.0  # [m]
     # path = path_planning_client(start_x, start_y, end_x, end_y)
     publish_path()
-
-    

@@ -100,8 +100,8 @@ class Mapping:
     def clean_map(self, start, end, expansion, step_size):
         # Generating a zero matrix for the entire map + some extending it a bit
         # since markers could be outside the airspace
-        x = (end[0] - start[0] + expansion)/step_size
-        y = (end[1] - start[1] + expansion)/step_size
+        x = (end[0] + abs(start[0]) + expansion)/step_size
+        y = (end[1] + abs(start[1]) + expansion)/step_size
         map_matrix = np.zeros((int(x), int(y)))
         return map_matrix
        
@@ -110,6 +110,7 @@ class Mapping:
         yidx = int(yidx)
         xidx = int(xidx)
         for i in range(self.infl):
+            
             self.matrix[yidx, xidx + i] = 1
             self.matrix[yidx + i, xidx + i] = 1
             self.matrix[yidx + i, xidx] = 1
@@ -169,10 +170,13 @@ class Mapping:
     def add_objects(self, points, wall=False, marker=False, roadsign=False):
         # adding the assigned objects into the map matrix
         for p in points:
-            yidx = self.y_conv - p[0]
-            xidx = self.x_conv + p[1]
+
+            yidx = self.y_conv + p[1]
+            xidx = self.x_conv + p[0]
+            
             # yidx = conv[0] - p[0]
             # xidx = conv[1] + p[1]
+            # print(p)
             p_shift = (int(yidx), int(xidx))
             if wall == True:
                 self.matrix[p_shift] = 1
@@ -184,6 +188,28 @@ class Mapping:
     
     def wall_values(self):
         pass
+
+    def object_poses(self):
+        # Create a list of lists containing the poses of the markers and signs.
+        # Returns two lists with tuples. First element in the tuple is the marker id or roadsign name
+        # Second element in the list is a list with the pose. [x y z angles] 
+        markers = []
+        signs = []
+
+        for object in self.map_data["markers"]:
+            # Place holder for name or ID if needed.
+            name = object["id"]
+            pose = object["pose"]["position"] + object["pose"]["orientation"]
+            
+            markers.append((name, pose))
+
+        for object in self.map_data["roadsigns"]:
+            # Place holder for name or ID if needed.
+            name = object["sign"]
+            pose = object["pose"]["position"] + object["pose"]["orientation"]
+            signs.append((name, pose))
+        
+        return markers, signs
 
     
 """

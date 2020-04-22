@@ -7,8 +7,10 @@ from mapping import Mapping
 import numpy as np
 import matplotlib.pyplot as plt
 
-show_animation = False
-location = '/home/zihan/dd2419_ws/src/crazyflie_9/milestone3/include/tutorial_1.world.json' # May need to change relative path
+# show_animation = False
+show_animation = True
+location = '/home/zihan/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json' 
+# location = '/home/zihan/dd2419_ws/src/crazyflie_9/worlds_json/tutorial_1.world.json' # May need to change relative path
 
 class AStarPlanner:
 
@@ -216,14 +218,16 @@ def main():
     # print("start!!")
 
     # start and goal position
-    sx = 75.0  # [m]
+    sx = 120.0  # [m]
     sy = 100.0  # [m]
-    gx = 120.0  # [m]
-    gy = 120.0  # [m]
+    gx = 20.0  # [m]
+    gy = 100.0  # [m]
     grid_size = 2.0  # [m]
     robot_radius = 1.0  # [m]
     
-    mapp = Mapping(location, 0.1, 3)
+    # mapp = Mapping(location, 0.1, 3)
+    mapp = Mapping(location, 0.05, 2)
+
     matrx = mapp.matrix
     range_of_map = matrx.shape
     horizonal = range_of_map[0]
@@ -239,27 +243,7 @@ def main():
     oy = [vertical-i for i in oy_old]
     ox = [horizonal-i for i in ox_old]
 
-    # ox, oy = [], []
-    # for i in range(-10, 60): # bottom line
-    #     ox.append(i)
-    #     oy.append(-10.0) 
-    # for i in range(-10, 60): # right line
-    #     ox.append(60.0)
-    #     oy.append(i)
-    # for i in range(-10, 61): # upper line
-    #     ox.append(i)
-    #     oy.append(60.0)
-    # for i in range(-10, 61):
-    #     ox.append(-10.0)
-    #     oy.append(i)
-    # for i in range(-10, 40):
-    #     ox.append(20.0)
-    #     oy.append(i)
-    # for i in range(0, 40):
-    #     ox.append(40.0)
-    #     oy.append(60.0 - i)
-    # oxy = [[ox[i], oy[i]] for i in range(len(ox))]
-
+    
     if show_animation:  # pragma: no cover
 
         plt.plot(ox, oy, ".k")
@@ -272,7 +256,7 @@ def main():
     rx, ry = a_star.planning(sx, sy, gx, gy)
     rx.reverse()
     ry.reverse()
-    # print(rx,ry)
+    print(rx,ry)
     if show_animation:  # pragma: no cover
         plt.plot(rx, ry, "-r")
         plt.show()
