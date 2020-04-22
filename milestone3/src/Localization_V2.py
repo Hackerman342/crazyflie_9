@@ -28,6 +28,7 @@ def arucopose(data):
     global roll_average
     global pitch_average
     global yaw_average
+    global t_final_odom_update
 
     for elm in data.markers:
     # if len(data.markers) > 0:
@@ -42,7 +43,7 @@ def arucopose(data):
             rospy.logwarn_throttle(5.0, 'No transform from %s to cf1/odom' % cam_aruco.header.frame_id)
             return
 
-        print('detected marker', elm.id, 'Updating odom frame')
+        print('detected marker', elm.id)
 
         send_transform = tfBuffer.transform(cam_aruco, 'cf1/odom', rospy.Duration(0.5))
 
@@ -110,11 +111,11 @@ def arucopose(data):
         aruco_pos_final = tfBuffer.transform(t_aruco_rotation,'cf1/odom', rospy.Duration(1))
         # aruco_pos_after_rotation = tfBuffer.lookup_transform('cf1/odom',  t_aruco_rotation.child_frame_id , rospy.Duration(0.5) ) 
 
-       
+
 
         # Difference between real aruco position in map and the position of the aruco after the rotation is performed
-        
-        
+
+
         x_add= x_map -  aruco_pos_final.pose.position.x
         y_add= y_map -  aruco_pos_final.pose.position.y
         z_add = z_map -   aruco_pos_final.pose.position.z
@@ -140,17 +141,18 @@ def arucopose(data):
 
         counter+=1
         if counter > 10:
+
              #Perform final update of the odometry frame
 
-            t_final_odom_update=TransformStamped()
-            t_final_odom_update.header.stamp = rospy.Time.now()
-            t_final_odom_update.header.frame_id = "map"
-            t_final_odom_update.child_frame_id = 'cf1/odom'
+            #t_final_odom_update=TransformStamped()
+            # t_final_odom_update.header.stamp = rospy.Time.now()
+            # t_final_odom_update.header.frame_id = "map"
+            # t_final_odom_update.child_frame_id = 'cf1/odom'
 
             x_final=sum(x_average)/len(x_average)
             y_final=sum(y_average)/len(y_average)
             z_final=sum(z_average)/len(z_average)
-            
+
             t_final_odom_update.transform.translation.x=x_final
             t_final_odom_update.transform.translation.y=y_final
             t_final_odom_update.transform.translation.z=z_final
@@ -159,7 +161,7 @@ def arucopose(data):
             pitch_final=sum(pitch_average)/len(pitch_average)
             yaw_final=sum(yaw_average)/len(yaw_average)
 
-            
+
 
             final_rotation = quaternion_from_euler(roll_final, pitch_final, yaw_final)
 
@@ -169,8 +171,9 @@ def arucopose(data):
             t_final_odom_update.transform.rotation.z=final_rotation[2]
             t_final_odom_update.transform.rotation.w=final_rotation[3]
 
+            print('Updating odom frame')
+            # br.sendTransform(t_final_odom_update)
 
-            br.sendTransform(t_final_odom_update)
 
             counter=0
 
@@ -181,6 +184,10 @@ def arucopose(data):
             roll_average=[]
             pitch_average=[]
             yaw_average=[]
+
+    # Broadcast most up to date transform every loop
+    t_final_odom_update.header.stamp = rospy.Time.now()
+    br.sendTransform(t_final_odom_update)
 
 
 
@@ -213,12 +220,28 @@ tf=tf2_ros.TransformListener(tfBuffer)
 aruco_sub=rospy.Subscriber("/aruco/markers", MarkerArray, goal_callback) # Sees aruco -> go to aurocopose function
 goal = None
 
+rospy.sleep(1)
+
+# t_odom_init=TransformStamped()
+# t_odom_init.header.stamp = rospy.Time.now()
+# t_odom_init.header.frame_id = "map"
+# t_odom_init.child_frame_id = 'cf1/odom'
+# t_odom_init.transform.rotation.w = 1
+# br.sendTransform(t_odom_init)  # send it so that its visible in rviz, what the crazyflie sees
+
+# wait_to_trans = True
+t_final_odom_update = TransformStamped()
+t_final_odom_update.header.frame_id = "map"
+t_final_odom_update.child_frame_id = 'cf1/odom'
+t_final_odom_update.transform.rotation.w = 1
+
+
 # ADDED HERE!!!!!!!!!!!!!!!!!!!!!
 counter=0
 x_average=[]
 y_average=[]
 z_average=[]
-            
+
 roll_average=[]
 pitch_average=[]
 yaw_average=[]

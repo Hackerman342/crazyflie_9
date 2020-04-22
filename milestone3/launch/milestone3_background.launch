@@ -22,7 +22,7 @@
     <node pkg="milestone2" type="clear_checkpoint_service" name="clear_checkpoint_service" />
 
     <node type="rviz" name="rviz" pkg="rviz" args="-d $(find milestone3)/include/milestone3.rviz" output="screen" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 1 map cf1/odom" />
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="0 0 0 0 0 0 1 map cf1/odom" /> -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="cam_to_drone" args="0.01 0 0.02 -1.57 0 -1.57 $(arg base_frame) $(arg camera_frame)" />
 
     <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_aruco_0" args="1.44 1.33 0.6 1.57 -1.57 0 map aruco_0" />

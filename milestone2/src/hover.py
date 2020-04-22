@@ -29,6 +29,7 @@ def pos_callback(msg):
 def goal_callback(msg):
     global goal
     goal=msg
+    print('Goal received in map frame')
     print(goal)
     # goal=msg
     # goal.x=goal.x
@@ -90,21 +91,7 @@ if __name__ == '__main__':
 
     print('Initial goal = starting position')
     print(goal)
-    rospy.sleep(5)
-    # height = init_tf.transform.translation.z
-
-    # init_trans = (init_tf.transform.translation.x,
-    #              init_tf.transform.translation.y,
-    #              init_tf.transform.translation.z)
-
-    # init_quat = (init_tf.transform.rotation.x,
-    #              init_tf.transform.rotation.y,
-    #              init_tf.transform.rotation.z,
-    #              init_tf.transform.rotation.w)
-
-    # tmat_init = translation_matrix(init_trans)
-    # qmat_init = quaternion_matrix(init_quat)
-    # goal_matrix = np.dot(tmat_init, qmat_init) # goal is initial pose until a goal is received
+    rospy.sleep(3)
 
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
@@ -113,7 +100,7 @@ if __name__ == '__main__':
         if goal:
             try:
                 # Map in odom coords (order very important!!)
-                odom_tf = tf_buffer.lookup_transform("cf1/odom", "map", rospy.Time.now())
+                odom_tf = tf_buffer.lookup_transform("cf1/odom", "map", rospy.Time.now(), rospy.Duration(0.5))
             except:
                 pass # Keep old transform
             odom_trans = (odom_tf.transform.translation.x,
@@ -145,7 +132,6 @@ if __name__ == '__main__':
             _, _, yaw = euler_from_quaternion(quaternion_from_matrix(final_mat))
             goal.yaw = math.degrees(yaw)
             # goal.header.frame_id = "cf1/odom"
-            print('GOAL!!!!')
             print("Transformed goal 'cf1/odom'")
             print(goal)
 
