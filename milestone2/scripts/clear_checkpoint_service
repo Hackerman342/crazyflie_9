@@ -43,7 +43,7 @@ def spin_360(msg):
     print(cmd)
     pos_publish.publish(cmd)
 
-    rotaterate=45
+    rotaterate=90
     rate = rospy.Rate(0.5)
 
     rotation=0

@@ -29,7 +29,7 @@ class Mapping:
         with open(self.jfile) as jfile:
             self.map_data = json.load(jfile)
             map_end, map_start = self.airspace()
-            
+
             if expansion > 0:
                 map_start, map_end = self.expand(map_start, map_end, expansion)
 
@@ -176,7 +176,6 @@ class Mapping:
             
             # yidx = conv[0] - p[0]
             # xidx = conv[1] + p[1]
-            print(p)
             p_shift = (int(yidx), int(xidx))
             if wall == True:
                 self.matrix[p_shift] = 1
