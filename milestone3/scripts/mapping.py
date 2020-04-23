@@ -200,7 +200,7 @@ class Mapping:
             # Place holder for name or ID if needed.
             name = object["id"]
             pose = object["pose"]["position"] + object["pose"]["orientation"]
-            
+
             markers.append((name, pose))
 
         for object in self.map_data["roadsigns"]:
@@ -208,10 +208,10 @@ class Mapping:
             name = object["sign"]
             pose = object["pose"]["position"] + object["pose"]["orientation"]
             signs.append((name, pose))
-        
+
         return markers, signs
 
-    
+
 """
 def create_map(x):
     # These are hard coded values, might change in the future

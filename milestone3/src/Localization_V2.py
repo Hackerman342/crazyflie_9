@@ -243,7 +243,7 @@ yaw_average=[]
 
 if __name__ == "__main__":
 
-    rate = rospy.Rate(20)
+    rate = rospy.Rate(10)
     while not rospy.is_shutdown():
         if goal:
             arucopose(goal)

@@ -16,7 +16,7 @@
 
     <include file="$(find milestone3)/launch/multi_road_sign_pose.launch" /> -->
     <node type="Localization_V2.py" name="Localization" pkg="milestone3" output="screen" />
-
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="-0.5 -0.5 0 0 0 0 1 map cf1/odom" /> -->
 
     <node type="map_rviz_transmitted.py" name="occupancy_node" pkg="milestone2" output="screen" />
     <node type="displaymapmarkers" name="displaymapmarkers" pkg="milestone2" args="$(find milestone3)/../worlds_json/$(arg world/map).json"/>

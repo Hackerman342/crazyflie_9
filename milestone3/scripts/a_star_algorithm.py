@@ -223,7 +223,7 @@ def main():
     gx = 20.0  # [m]
     gy = 100.0  # [m]
     grid_size = 2.0  # [m]
-    robot_radius = 1.0  # [m]
+    robot_radius = 10.0  # [m]
     
     # mapp = Mapping(location, 0.1, 3)
     mapp = Mapping(location, 0.05, 2)

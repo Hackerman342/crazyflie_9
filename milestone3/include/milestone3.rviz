@@ -80,6 +80,10 @@ Visualization Manager:
           Value: true
         aruco/signroundabout_warning:
           Value: true
+        arucopostion1:
+          Value: true
+        arucopostion2:
+          Value: true
         cf1/base_link:
           Value: true
         cf1/camera_link:
@@ -87,6 +91,14 @@ Visualization Manager:
         cf1/odom:
           Value: true
         map:
+          Value: true
+        no_bicycle/detected:
+          Value: true
+        residential/detected:
+          Value: true
+        rotation_odometry:
+          Value: false
+        roundabout/detected:
           Value: true
       Marker Scale: 1
       Name: TF
@@ -118,9 +130,20 @@ Visualization Manager:
           aruco/signroundabout_warning:
             {}
           cf1/odom:
+            arucopostion1:
+              {}
+            arucopostion2:
+              {}
             cf1/base_link:
               cf1/camera_link:
-                {}
+                no_bicycle/detected:
+                  {}
+                residential/detected:
+                  {}
+                roundabout/detected:
+                  {}
+            rotation_odometry:
+              {}
       Update Interval: 0
       Value: true
     - Class: rviz/Image
@@ -156,6 +179,29 @@ Visualization Manager:
       Topic: /map
       Unreliable: false
       Use Timestamp: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 25; 255; 0
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Billboards
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /path_vis
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:

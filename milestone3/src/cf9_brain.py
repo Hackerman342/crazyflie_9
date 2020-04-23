@@ -13,6 +13,8 @@ import tf2_ros
 import tf2_geometry_msgs
 from tf.transformations import euler_from_quaternion, quaternion_from_euler, quaternion_multiply
 from geometry_msgs.msg import TransformStamped, PoseStamped
+from nav_msgs.msg import Path
+
 from std_srvs.srv import Empty, EmptyResponse
 from milestone3.srv import PathPlanning, PathPlanningResponse
 
@@ -32,9 +34,9 @@ class CrazyflieBrain():
         # From '/home/robot/dd2419_ws/src/darknet_ros/darknet_ros/config/yolo-lite-cf9-4classes.yaml'
 
         # Set up checkpoint clearing service
-        print('waiting for service')
+        print('waiting for clear checkpoint service')
         rospy.wait_for_service('clearpointservice')
-        print('got service')
+        print('got clear checkpoint service')
 
         print('waiting for path planning service')
         rospy.wait_for_service('path_planning')
@@ -50,6 +52,9 @@ class CrazyflieBrain():
 
         # Initialize goal publisher (for interacting with 'hover' node)
         self.goal_pub = rospy.Publisher("goal", Position, queue_size=10)
+
+        # Initialize path publisher (just visualization)
+        self.path_pub = rospy.Publisher("path_vis", Path, queue_size=10)
 
         # Initialize subscriber to bounding box
         rospy.Subscriber(self.bounding_boxes_top, BoundingBoxes, self._detection_cb)
@@ -74,21 +79,30 @@ class CrazyflieBrain():
             Repeat for next sign
         """
 
-        roundabout_pose = Position()
-        roundabout_pose.x = 0.0
-        roundabout_pose.y = 0.7
-        roundabout_pose.z = 0.6
-        roundabout_pose.yaw = 0.0
+        # roundabout_pose = Position()
+        # roundabout_pose.x = 0.0
+        # roundabout_pose.y = 0.7
+        # roundabout_pose.z = 0.6
+        # roundabout_pose.yaw = 0.0
 
-        self.obstacle_sequence('roundabout', roundabout_pose)
+        # self.obstacle_sequence('roundabout', roundabout_pose)
 
-        narrow_left_pose = Position()
-        narrow_left_pose.x = -0.9
-        narrow_left_pose.y = 0.4
-        narrow_left_pose.z = 0.6
-        narrow_left_pose.yaw = 180.0
+        # narrow_left_pose = Position()
+        # narrow_left_pose.x = -0.9
+        # narrow_left_pose.y = 0.4
+        # narrow_left_pose.z = 0.6
+        # narrow_left_pose.yaw = 180.0
 
-        self.obstacle_sequence('narrows_from_left', narrow_left_pose)
+        # self.obstacle_sequence('narrows_from_left', narrow_left_pose)
+
+
+        residential_pose = Position()
+        residential_pose.x = 3.5
+        residential_pose.y = 0.5
+        residential_pose.z = 0.6
+        residential_pose.yaw = 270.0
+
+        self.obstacle_sequence('residential', residential_pose)
 
         rospy.loginfo('Finished!!!')
 
@@ -114,9 +128,35 @@ class CrazyflieBrain():
 
         pathx = [-(c-100)*resolution for c in path.rx] # In meters, which can be published to the /cf1/cmd_position
         pathy = [-(c-100)*resolution for c in path.ry] # In meters, which can be published to the /cf1/cmd_position
-        print("pathx: ", pathx)
-        print("pathy: ", pathy)
+        path_yaw = []
+        for i in range(len(pathx)-1):
+            yaw = math.degrees(math.atan2(pathy[i+1]-pathy[i],pathx[i+1]-pathx[i]))
+            path_yaw.append(yaw)
+        path_yaw.append(observe_pose.yaw)
+
+        # print("pathx: ", pathx)
+        # print("pathy: ", pathy)
+        # print("path_yaw: ", path_yaw)
+
         rospy.sleep(3) # Pause so humans can read path on screen
+
+
+        #### Start build path msg to visualize in RVIZ ####
+        path_msg = Path()
+        path_msg.header.frame_id = 'map'
+        poses = []
+        for i in range(len(pathx)):
+            pose = PoseStamped()
+            # pose.header.frame_id = 'map'
+            pose.pose.position.x = pathx[i]
+            pose.pose.position.y = pathy[i]
+            pose.pose.position.z = 0.6
+
+            poses.append(pose)
+        path_msg.poses = poses
+        path_msg.header.stamp = rospy.Time.now()
+        self.path_pub.publish(path_msg)
+        #### End build path msg to visualize in RVIZ ####
 
 
         ###### From here DOWN as path_following() function ######
@@ -133,18 +173,15 @@ class CrazyflieBrain():
         for i in range(len(pathx)):
             path_pose.x = pathx[i]
             path_pose.y = pathy[i]
+            path_pose.yaw = path_yaw[i]
 
-            #### Temporary and super cheesy ####
-            if i == 4 and sign_class == 'narrows_from_left':
-                path_pose.yaw = 90.0
-            if i == 5 and sign_class == 'narrows_from_left':
-                path_pose.yaw = 180.0
-            #### Temporary and super cheesy ####
-            """
-            Add yaw calc so direction follows direction of movement
-            """
             self.goal_pub.publish(path_pose)
             rospy.loginfo('Sent next path pose')
+
+            # Republish path for visualization
+            path_msg.header.stamp = rospy.Time.now()
+            self.path_pub.publish(path_msg)
+
             path_rate.sleep()
 
         ###### From here UP as path_following() function ######
