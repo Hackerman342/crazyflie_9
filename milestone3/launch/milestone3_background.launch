@@ -14,7 +14,7 @@
     <include file="$(find dd2419_launch)/launch/base.launch" />
     <!-- <include file="$(find dd2419_simulation)/launch/simulation.launch" /> -->
 
-    <include file="$(find milestone3)/launch/multi_road_sign_pose.launch" /> -->
+    <include file="$(find milestone3)/launch/multi_road_sign_pose.launch" />
     <node type="Localization_V2.py" name="Localization" pkg="milestone3" output="screen" />
     <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom" args="-0.5 -0.5 0 0 0 0 1 map cf1/odom" /> -->
 

@@ -6,7 +6,7 @@
   <arg name="goal_topic" default="goal"/>
   <arg name="goal_frame" default="map"/>
   <!-- x, y, z, yaw -->
-  <arg name="goal_pose" default="1.0, 0.5, 0.4, 0"/>
+  <arg name="goal_pose" default="0.3, 0.5, 0.6, 0"/>
   <!-- <arg name="goal_pose" default="0.3, 0.9, 0.6, 90"/> -->
   <!-- <arg name="goal_pose" default="0.1, 0.4, 0.6, -90"/> -->
 

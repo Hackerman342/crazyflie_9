@@ -140,9 +140,9 @@ def arucopose(data):
 
 
         counter+=1
-        if counter > 10:
+        if counter > 19:
 
-             #Perform final update of the odometry frame
+            #Perform final update of the odometry frame
 
             #t_final_odom_update=TransformStamped()
             # t_final_odom_update.header.stamp = rospy.Time.now()

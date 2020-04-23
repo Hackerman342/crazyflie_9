@@ -122,6 +122,7 @@ class CrazyflieBrain():
         end_y = int(round(-observe_pose.y/resolution)+100)
 
         # Call path planning and following sequence
+
         path_planning = rospy.ServiceProxy('path_planning', PathPlanning)
         path = path_planning(start_x, start_y, end_x, end_y)
 
