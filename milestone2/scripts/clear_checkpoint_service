@@ -23,7 +23,7 @@ from crazyflie_driver.srv import GoToRequest, GoToResponse, GoTo
 #     """
 #     x=0
 #     y=0.8
-#     z=0.6
+#     z=0.5
 #     yaw = round((180./np.pi)*yaw_rad)
 
 

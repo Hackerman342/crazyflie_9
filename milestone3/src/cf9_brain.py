@@ -23,8 +23,6 @@ from darknet_ros_msgs.msg import BoundingBoxes
 from crazyflie_driver.msg import Position
 from crazyflie_driver.srv import GoToRequest, GoToResponse, GoTo
 
-# /home/zihan/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json
-# global signs_visited
 
 class CrazyflieBrain():
 
@@ -96,12 +94,6 @@ class CrazyflieBrain():
             target_sign = self.get_closest_sign()
             self.obstacle_sequence(target_sign)
 
-
-        # self.obstacle_sequence('roundabout')
-        # self.obstacle_sequence('narrows_from_left')
-        # self.obstacle_sequence('residential')
-        # self.obstacle_sequence('no_bicycle')
-
         rospy.loginfo('Finished!!!')
 
     def get_closest_sign(self):
@@ -119,13 +111,8 @@ class CrazyflieBrain():
                 distance = math.hypot(sign_x-current_x, sign_y-current_y)
                 dist_dict[sign] = distance
 
-                # where to use the distance
-
-                # signs_visited.append(sign)
-
         # The name of the sign to the shortest distance:
         shortest_dist_sign = min(dist_dict, key=dist_dict.get)
-        shortest_dist_pose = self.objects[shortest_dist_sign]
 
         self.signs_visited.append(shortest_dist_sign)
 
@@ -133,10 +120,6 @@ class CrazyflieBrain():
             self.signs_visited = [shortest_dist_sign]
 
         return shortest_dist_sign
-
-        # poses_buffer.append(sign)
-        # signs_buffer = []
-        # poses_buffer.append(new_pose)
 
 
 
@@ -153,7 +136,7 @@ class CrazyflieBrain():
         observe_pose = Position()
         observe_pose.x = self.objects[sign_class][0] - math.cos(math.radians(yaw))*offset
         observe_pose.y = self.objects[sign_class][1] - math.sin(math.radians(yaw))*offset
-        observe_pose.z = 0.6
+        observe_pose.z = 0.5
         observe_pose.yaw = yaw
 
         """ use tf to get the starting position in the map frame """
@@ -191,7 +174,7 @@ class CrazyflieBrain():
             # pose.header.frame_id = 'map'
             pose.pose.position.x = pathx[i]
             pose.pose.position.y = pathy[i]
-            pose.pose.position.z = 0.6
+            pose.pose.position.z = 0.5
 
             poses.append(pose)
         path_msg.poses = poses
@@ -205,7 +188,7 @@ class CrazyflieBrain():
 
         """ Follow the path """
         path_pose = Position()
-        path_pose.z = 0.6
+        path_pose.z = 0.5
 
         path_rate = rospy.Rate(0.5)
         for i in range(len(pathx)):
@@ -221,6 +204,7 @@ class CrazyflieBrain():
             self.path_pub.publish(path_msg)
 
             path_rate.sleep()
+        rospy.sleep(2)
 
         self.goal_pub.publish(observe_pose)
         rospy.loginfo('Confirm at end of path - 1x')
@@ -282,11 +266,9 @@ if __name__ == '__main__':
     # Initialize brain class
     cfb = CrazyflieBrain()
 
-    #rospy.sleep(10) # Wait for hover to initialize and get ready to do stuff
-
     print("running...")
-    # Run until KeyboardInterrupt
 
+    # Run until KeyboardInterrupt
     try:
         cfb.state_machine()
     except KeyboardInterrupt:
