@@ -24,6 +24,7 @@ from crazyflie_driver.msg import Position
 from crazyflie_driver.srv import GoToRequest, GoToResponse, GoTo
 
 # /home/zihan/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json
+# global signs_visited
 
 class CrazyflieBrain():
 
@@ -46,13 +47,16 @@ class CrazyflieBrain():
         # Creating a map object to obtain the poses of the objects in the map.
         # markers and signs are both lists with tuples (name, pose).
         # objects are a dictionary containing both markers and signs where the names are keys and poses are values.
+        # self.objects in form [x, y, z, roll, pitch, yaw]
+        # NOTE: Roll and pitch are such that yaw is flipped 180 deg and roll & pitch can be ignored
         self.map = Mapping('/home/robot/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json', 0.05, 2)
         self.markers, self.signs, self.objects = self.map.object_poses()
 
         self.objects['narrows_from_left'] = self.objects.pop('road_narrows_from_left')
         self.objects['roundabout'] = self.objects.pop('roundabout_warning')
 
-
+        # Signs that the drone has already visited. Should be reset when signs_visited == classes
+        self.signs_visited = []
 
         # Initialize callback variables
         self.boxes = None
@@ -80,64 +84,94 @@ class CrazyflieBrain():
     def state_machine(self):
         """
         Process:
-            X Send a goal pose directly above starting position (already done in hover node)
-
-            Call path planning service (from current to offset from target sign)
-            Call path following service
-            X Confirm detection of target sign
-            X Call checkpoint clear service
+            Call path planning service (from current pose to observation pose)
+            Follow path following sequence
+            Confirm detection of target sign
+            Call checkpoint clear service
+            Return to observation pose
 
             Repeat for next sign
         """
-
-        # roundabout_pose = Position()
-        # roundabout_pose.x = 0.0
-        # roundabout_pose.y = 0.7
-        # roundabout_pose.z = 0.6
-        # roundabout_pose.yaw = 0.0
-
-        # self.obstacle_sequence('roundabout', roundabout_pose)
-
-        # narrow_left_pose = Position()
-        # narrow_left_pose.x = -0.9
-        # narrow_left_pose.y = 0.4
-        # narrow_left_pose.z = 0.6
-        # narrow_left_pose.yaw = 180.0
-
-        # self.obstacle_sequence('narrows_from_left', narrow_left_pose)
+        for _ in range(len(self.objects)):
+            target_sign = self.get_closest_sign()
+            self.obstacle_sequence(target_sign)
 
 
-        residential_pose = Position()
-        residential_pose.x = 3.5
-        residential_pose.y = 0.5
-        residential_pose.z = 0.6
-        residential_pose.yaw = 270.0
-
-        self.obstacle_sequence('residential', residential_pose)
+        # self.obstacle_sequence('roundabout')
+        # self.obstacle_sequence('narrows_from_left')
+        # self.obstacle_sequence('residential')
+        # self.obstacle_sequence('no_bicycle')
 
         rospy.loginfo('Finished!!!')
 
+    def get_closest_sign(self):
+        cf_trans = self.tf_buffer.lookup_transform("map", "cf1/base_link", rospy.Time.now(), rospy.Duration(10))
+        current_x = cf_trans.transform.translation.x
+        current_y = cf_trans.transform.translation.y
+
+        dist_dict = {}
+
+        """ Calculate the distance """
+        for sign in self.classes:
+            if sign not in self.signs_visited:
+                sign_pose = self.objects[sign]
+                sign_x, sign_y = sign_pose[0], sign_pose[1]
+                distance = math.hypot(sign_x-current_x, sign_y-current_y)
+                dist_dict[sign] = distance
+
+                # where to use the distance
+
+                # signs_visited.append(sign)
+
+        # The name of the sign to the shortest distance:
+        shortest_dist_sign = min(dist_dict, key=dist_dict.get)
+        shortest_dist_pose = self.objects[shortest_dist_sign]
+
+        self.signs_visited.append(shortest_dist_sign)
+
+        if self.signs_visited == self.classes:
+            self.signs_visited = [shortest_dist_sign]
+
+        return shortest_dist_sign
+
+        # poses_buffer.append(sign)
+        # signs_buffer = []
+        # poses_buffer.append(new_pose)
 
 
-    def obstacle_sequence(self, sign_class, observe_pose):
 
-        """ Go to pose """
+    def obstacle_sequence(self, sign_class):
 
+        rospy.loginfo('Begin sequence for next road sign')
+        print('Sign class: ', sign_class)
+        rospy.sleep(3)
+
+        """ Calc observation pose based on sign pose"""
+        offset = 0.5 # [m] | How far away to look at sign
+        yaw = self.objects[sign_class][5] # rpy
+
+        observe_pose = Position()
+        observe_pose.x = self.objects[sign_class][0] - math.cos(math.radians(yaw))*offset
+        observe_pose.y = self.objects[sign_class][1] - math.sin(math.radians(yaw))*offset
+        observe_pose.z = 0.6
+        observe_pose.yaw = yaw
+
+        """ use tf to get the starting position in the map frame """
         start_pose_ = self.tf_buffer.lookup_transform("map", "cf1/base_link", rospy.Time.now(), rospy.Duration(10))
 
-        # use tf to get the start_x .... and end_y in the map frame.
+        """ Define path planning start and end in pixel coords """
         resolution = 0.05
         start_x = int(round(-start_pose_.transform.translation.x/resolution)+100)  # transfer it from meters to pixels
         start_y = int(round(-start_pose_.transform.translation.y/resolution)+100)
         end_x = int(round(-observe_pose.x/resolution)+100)
         end_y = int(round(-observe_pose.y/resolution)+100)
 
-        # Call path planning and following sequence
-
+        """ Call path planning service """
+        rospy.loginfo('Starting path planning')
         path_planning = rospy.ServiceProxy('path_planning', PathPlanning)
         path = path_planning(start_x, start_y, end_x, end_y)
 
-
+        """ Get path as """
         pathx = [-(c-100)*resolution for c in path.rx] # In meters, which can be published to the /cf1/cmd_position
         pathy = [-(c-100)*resolution for c in path.ry] # In meters, which can be published to the /cf1/cmd_position
         path_yaw = []
@@ -146,14 +180,9 @@ class CrazyflieBrain():
             path_yaw.append(yaw)
         path_yaw.append(observe_pose.yaw)
 
-        # print("pathx: ", pathx)
-        # print("pathy: ", pathy)
-        # print("path_yaw: ", path_yaw)
+        rospy.loginfo('Finished path planning')
 
-        rospy.sleep(3) # Pause so humans can read path on screen
-
-
-        #### Start build path msg to visualize in RVIZ ####
+        """ Build path msg and visualize in RVIZ """
         path_msg = Path()
         path_msg.header.frame_id = 'map'
         poses = []
@@ -168,18 +197,15 @@ class CrazyflieBrain():
         path_msg.poses = poses
         path_msg.header.stamp = rospy.Time.now()
         self.path_pub.publish(path_msg)
-        #### End build path msg to visualize in RVIZ ####
 
-
-        ###### From here DOWN as path_following() function ######
 
         """
         Add rotation to path direction before beginning path
         """
 
+        """ Follow the path """
         path_pose = Position()
         path_pose.z = 0.6
-        path_pose.yaw = 0.0
 
         path_rate = rospy.Rate(0.5)
         for i in range(len(pathx)):
@@ -196,9 +222,6 @@ class CrazyflieBrain():
 
             path_rate.sleep()
 
-        ###### From here UP as path_following() function ######
-
-
         self.goal_pub.publish(observe_pose)
         rospy.loginfo('Confirm at end of path - 1x')
         rospy.sleep(3)
@@ -210,7 +233,9 @@ class CrazyflieBrain():
 
 
         """ Wait for detection """
+        self.boxes = None
         rate = rospy.Rate(1)
+        rospy.loginfo("Start looking for road sign detections")
         saw_sign = False
         while not saw_sign:
             if self.boxes:
@@ -231,11 +256,10 @@ class CrazyflieBrain():
         clear_pose.yaw = observe_pose.yaw
 
         try:
+            rospy.loginfo('Starting clear checkpoint sequence')
             checkpoint = rospy.ServiceProxy('clearpointservice', GoTo)
-
-            # rospy.loginfo('Clearing checkpoint')
             checkpoint(clear_pose)
-            # rospy.loginfo('Checkpoint cleared')
+            rospy.loginfo('Checkpoint cleared')
         except rospy.ServiceException as e:
             print ("Service call failed: %s" % e)
 
@@ -243,14 +267,11 @@ class CrazyflieBrain():
 
 
         """ Fix odometry """
-        # Send goal to look at marker
-        # Call path planning and following sequence
-
         self.goal_pub.publish(observe_pose)
-        print('once')
+        rospy.loginfo("Correct pose to observation pose - 1x")
         rospy.sleep(3)
         self.goal_pub.publish(observe_pose)
-        print('twice')
+        rospy.loginfo("Correct pose to observation pose - 2x")
         rospy.sleep(3)
 
 
