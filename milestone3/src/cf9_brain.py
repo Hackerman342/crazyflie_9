@@ -8,7 +8,7 @@ import rospy
 import cv2
 import numpy as np
 import math
-import mapping
+from mapping import Mapping
 
 import tf2_ros
 import tf2_geometry_msgs
@@ -46,9 +46,13 @@ class CrazyflieBrain():
         # Creating a map object to obtain the poses of the objects in the map.
         # markers and signs are both lists with tuples (name, pose).
         # objects are a dictionary containing both markers and signs where the names are keys and poses are values.
-        self.map = mapping('/home/robot/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json', 0.05, 2)
+        self.map = Mapping('/home/robot/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json', 0.05, 2)
         self.markers, self.signs, self.objects = self.map.object_poses()
-    
+
+        self.objects['narrows_from_left'] = self.objects.pop('road_narrows_from_left')
+        self.objects['roundabout'] = self.objects.pop('roundabout_warning')
+
+
 
         # Initialize callback variables
         self.boxes = None

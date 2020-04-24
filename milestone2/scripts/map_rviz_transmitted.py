@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
 
     resolution = 0.05
-    map_data = Mapping("/home/johna/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json", resolution, 0)
+    map_data = Mapping("/home/robot/dd2419_ws/src/crazyflie_9/worlds_json/crazyflie9_apartment.world.json", resolution, 0)
 
     end_coordinates, start_coordinates = map_data.airspace()
     height = abs(start_coordinates[0]) + abs(end_coordinates[0])
