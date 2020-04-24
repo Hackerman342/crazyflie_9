@@ -202,7 +202,7 @@ class Mapping:
             name = object["id"]
             pose = object["pose"]["position"] + object["pose"]["orientation"]
             
-            objects[name] = pose
+            # objects[name] = pose
 
             markers.append((name, pose))
 
