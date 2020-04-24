@@ -192,6 +192,8 @@ class Mapping:
         # Create a list of lists containing the poses of the markers and signs.
         # Returns two lists with tuples. First element in the tuple is the marker id or roadsign name
         # Second element in the list is a list with the pose. [x y z angles] 
+        objects = {}
+
         markers = []
         signs = []
 
@@ -200,15 +202,20 @@ class Mapping:
             name = object["id"]
             pose = object["pose"]["position"] + object["pose"]["orientation"]
             
+            objects[name] = pose
+
             markers.append((name, pose))
 
         for object in self.map_data["roadsigns"]:
             # Place holder for name or ID if needed.
             name = object["sign"]
             pose = object["pose"]["position"] + object["pose"]["orientation"]
+            
+            objects[name] = pose
+
             signs.append((name, pose))
         
-        return markers, signs
+        return markers, signs, objects
 
     
 """

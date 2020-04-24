@@ -30,13 +30,20 @@ yc = mapp.y_conv
 # Using your path planner you get (x, y) coordinates. Subtract (x_conv, y_conv) from each coordinate.
 
 
-markers, signs = mapp.object_poses()
+_, _, objects = mapp.object_poses()
 
-for marker in markers:
-    print marker
+for name in objects:
+    print(name)
 
-for sign in signs:
-    print sign
+for object in objects:
+    print(objects[object])
+
+
+# for marker in markers:
+#     print marker
+
+# for sign in signs:
+#     print sign
 
 # Since the matrix doesn't have negative indices we need to change the axis when plotting the image
 # plt.imshow(matrx, extent=[-matrx.shape[1]/2., matrx.shape[1]/2., -matrx.shape[0]/2., matrx.shape[0]/2.])
