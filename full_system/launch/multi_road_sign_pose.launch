@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <arg name="bounding_box_topic"                default="/darknet_ros/bounding_boxes"/>
+  <arg name="image_topic"                       default="/cf1/camera/image_raw"/>
+  <arg name="camera_frame"                      default="cf1/camera_link"/>
+  <arg name="odometry_frame"                    default="cf1/odom"/>
+  <arg name="map_frame"                         default="map"/>
+
+  <!-- Launch YOLO object detection-->
+  <include file="$(find darknet_ros)/launch/darknet_ros.launch" />
+
+  <!-- Add static transform to true sign poses for comparison -->
+  <arg name="true_sign_frame_1"                 default="narrows_from_left/true"/>
+  <arg name="true_sign_frame_2"                 default="no_bicycle/true"/>
+  <arg name="true_sign_frame_3"                 default="residential/true"/>
+  <arg name="true_sign_frame_4"                 default="roundabout/true"/>
+
+  <node name="multiclass_road_sign_pose" pkg="full_system" type="multiclass_road_sign_pose.py" output="screen">
+    <param name="bounding_box_topic"                value="$(arg bounding_box_topic)"/>
+    <param name="image_topic"                       value="$(arg image_topic)"/>
+    <param name="camera_frame"                      value="$(arg camera_frame)"/>
+    <param name="odometry_frame"                    value="$(arg odometry_frame)"/>
+    <param name="map_frame"                         value="$(arg map_frame)"/>
+  </node>
+
+</launch>
+

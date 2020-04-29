@@ -17,7 +17,7 @@ from geometry_msgs.msg import TransformStamped, PoseStamped
 from nav_msgs.msg import Path
 
 from std_srvs.srv import Empty, EmptyResponse
-from milestone3.srv import PathPlanning, PathPlanningResponse
+from full_system.srv import PathPlanning, PathPlanningResponse
 
 from darknet_ros_msgs.msg import BoundingBoxes
 from crazyflie_driver.msg import Position

@@ -1,0 +1,14 @@
+yolo_model:
+
+  config_file:
+    name: yolo-lite-cf9-4classes.cfg
+  weight_file:
+    name: yolo-lite-cf9-4classes_366000.weights
+  threshold:
+    value: 0.6
+  detection_classes:
+    names:
+      - narrows_from_left
+      - no_bicycle
+      - residential
+      - roundabout
